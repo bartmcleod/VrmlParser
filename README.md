@@ -15,7 +15,7 @@ The parser is implemented in JavaScript and can be run by node from the command 
 `node vrml-parser.js` on the command line to see the experimental output.
 
 To parse a different file, edit `vrml-parser.js` and change the path to the `test.wrl` file that is being loaded, 
-or paste the contents of your vrml file into `test.wrl`.
+or paste the contents of your VRML file into `test.wrl`.
 
 Originally, `test.wrl` contains the same content as the `house.wrl` from the ThreeJs examples, except for
 an occasional typo I had to fix to make the parser succeed.
@@ -41,3 +41,7 @@ error message is correct. Otherwise, please report an issue on github: https://g
 ## How you can help
 If you are interested in the projects, please test as many of your VRML files as possible and post any issues you find with your files, along with the file that yields errors and a description of 
 the issue.
+
+## License
+You are free to use the Grammar any way you like, with the only restriction that you should mention 
+the original author: Bart McLeod.
