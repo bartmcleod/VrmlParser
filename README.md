@@ -20,6 +20,17 @@ or paste the contents of your VRML file into `test.wrl`.
 Originally, `test.wrl` contains the same content as the `house.wrl` from the ThreeJs examples, except for
 an occasional typo I had to fix to make the parser succeed.
 
+### Inline nodes
+The parser currently makes no attempt to load Inline nodes. It only parses them as an Inline node with
+a single property: the url. Depending on the type of renderer you use, you might want to feed the VRML file
+found at the url to the parser in turn, to get its contents as a node tree. If you are not writing a renderer,
+but would still like to see the contents of your whole VRML world, including Inline nodes, you may
+use `php make_single_file.php input.wrl [output-dir]`. For this command you need php. It will output 
+the file `single_input.wrl` in the same directory as `input.wrl` or in the `output-dir` if you specified
+one. Once you've got `single_input.wrl` you may use that as input in the `vrml-parser.js` and run that through
+`node vrml-parser.js` to see the full tree on the console.
+
+
 ### Parser errors and reporting issues
 If the parser fails with information about a location in your VRML file, it will report the position
 in the terminal output. This might help you in correcting any errors in your VRML file, if you feel the
@@ -30,6 +41,7 @@ error message is correct. Otherwise, please report an issue on github: https://g
 2. npm
 3. pegjs-require
 4. fs
+5. php, if you want to merge multiple VRML files into one.
 
 ## Milestones
 1. Working, experimental grammar, based on experience, memory and sample files. It should be able to parse house.wrl, from the ThreeJs examples.
