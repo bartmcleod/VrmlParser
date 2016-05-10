@@ -25,43 +25,16 @@
  *
  */
 {
-	var depth = 0;
-	var decoration = '';
-	var printable = [];
 	var nodeDefinitions = [];
 	var routes = [];
-
-	// this initializer can be elaborated on
-	var printTree = function(tree){
-		decoration = '';
-		// determine decoration base on depth
-		for (var j=0; j < depth; j++) {
-            decoration += '-';
-        }
-
-		for (var a in tree) {
-			if ('string' === typeof a) {
-
-				var value = tree[a];
-				if ('object' == typeof value) {
-					depth++;
-					console.log(decoration + a);
-					printTree(value);
-					depth--;
-				} else {
-					console.log(decoration + a + ': ' + tree[a]);
-				}
-			}
-		}
-	};
-
 }
 
 vrml
 	= '#VRML V2.0 utf8' vrml:(node / comment / route)*
 	{
-		printTree(vrml);
-		//console.log(routes);
+	    // before returning the root vrml object, enricht it with routes and nodeDefinitions
+		vrml.nodeDefinitions = nodeDefinitions;
+		vrml.routes = routes;
 		return vrml;
 	}
 

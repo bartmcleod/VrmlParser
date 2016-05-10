@@ -6,11 +6,12 @@
 require('pegjs-require');
 var fs = require('fs');
 var parser = require('./vrml.pegjs');
+var consoleRenderer = require('./Renderer/Console.js');
 var vrmlText = fs.readFileSync('./test.wrl', 'utf8');
 
 try {
-  var result = parser.parse(vrmlText);
-  console.log(result);
+  var nodeTree = parser.parse(vrmlText);
+  consoleRenderer.render(nodeTree);
 } catch (e) {
   console.log('Exception with message ' + e.message);
 
