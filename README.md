@@ -50,10 +50,20 @@ error message is correct. Otherwise, please report an issue on github: https://g
 4. Refining the parser to support the VRML 97 specification more closely, based on the specification and strict test files.
 5. Automated testing
 
+## Nice to have
+Now that I have defined a Grammar that does a basic job of parsing VRML in JavaScript, it would be nice to have
+something similar that would add PEG.js grammar support and VRML support to my favorite IDE: PHPStorm, or
+more generally speaking, IntelliJ IDEA.
+
 ## How you can help
 If you are interested in the projects, please test as many of your VRML files as possible and post any issues you find with your files, along with the file that yields errors and a description of 
 the issue.
 
+### Coding style
+Although my first commits did not adhere to any specific coding style, I decided to follow best practices
+already validated by the node community. We should adhere to the coding style as described here: http://nodeguide.com/style.html
+
 ## License
 You are free to use the Grammar any way you like, with the only restriction that you should mention 
-the original author: Bart McLeod.
+the original author: Bart McLeod. If you do not remove any @copyright and @author annotations you will
+be fine.
