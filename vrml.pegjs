@@ -59,7 +59,7 @@ node
 
 			// is p a node?
 			if (undefined !== p.node) {
-				console.log(p.node + ' node found');
+				//console.log(p.node + ' node found');
 
 				// do not confuse childNodes with elements of children [], childNodes are direct children.
 				if (undefined === n.childNodes) {

@@ -20,5 +20,3 @@ try {
     console.log('Exception at location end: offset: ' + e.location.end.offset + ' line: ' + e.location.end.line + ' column: ' + e.location.end.column);
   }
 }
-
-

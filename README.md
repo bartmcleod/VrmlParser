@@ -20,6 +20,33 @@ or paste the contents of your VRML file into `test.wrl`.
 Originally, `test.wrl` contains the same content as the `house.wrl` from the ThreeJs examples, except for
 an occasional typo I had to fix to make the parser succeed.
 
+### How to use the parser in the browser
+@todo: add an example html page
+
+*For your convenience, a pre-parsed `vrml.js` has been added to the project. It is ready for you to use in a browser. It exposes the vrmlParser global variable as the parser.*
+
+To use the parser in the Browser, to cannot make use of the nodeJs approach, you will have to generate a browser friendly version of the parser. It can be generated using the following command:
+
+```
+pegjs -e vrmlParser vrml.pegjs
+```
+*See also http://pegjs.org/documentation#generating-a-parser-command-line*
+
+This generates the parser as a JavaScript file, that can be loaded in the html page using a <script> tag like any other JavaScript file.
+
+Note that the options come before the input file name. Running this command will generate the parser in `vrml.js`, which you can then load in the browser. The parser will be available to you as vrmlParser:
+
+```
+var xhrLoader = new THREE.XHRLoader();
+// onLoad, onProgress, onError
+xhrLoader.load("wrl/brinkweg/single_brinkweg.wrl", function (data){
+    var tree = vrmlParser.parse(data);
+    consele.log(tree);
+}, function (){},function(){});
+
+```
+Instead of using the THREE.XHRLoader you could use XMLHttpRequest. For the browser, you do not need a console renderer to get visual textual output, you may just call `console.log(tree);` and you will be able to expand all nodes in the browser console, to verify that your VRML file has been parsed as expected.
+
 ### Inline nodes
 The parser currently makes no attempt to load Inline nodes. It only parses them as an Inline node with
 a single property: the url. Depending on the type of renderer you use, you might want to feed the VRML file
@@ -49,6 +76,19 @@ error message is correct. Otherwise, please report an issue on github: https://g
 3. Adding support for all parsed nodes, including animation to the VRML loader from the ThreeJS examples.
 4. Refining the parser to support the VRML 97 specification more closely, based on the specification and strict test files.
 5. Automated testing
+
+### Next Milestone
+*Refactoring the example VRML loader for ThreeJS to use the experimental grammar based PEG.js parser instead of line by line parsing.*
+
+In order for this to work, the whole stack we used so far has to work in the browser, if we want to do the parsing of the VRML at the same time as rendering it in ThreeJs. We can simplify the milestone by splitting the process:
+1. Write out a ThreeJs JavaScript file that can be used in a browser.
+2. Load the script in an HTML page.
+For this very simple two-step process, the only hard part is generating ThreeJs code, instead of just 
+writing it directly, based on the node tree. The advantages are that it will load faster in your browser, because it's already been parsed and you can make modifications to the generated ThreeJs script,
+ so that you will have a new starting point to build on.
+ 
+There's even more to it. Not only is the VRML file parsed at runtime, when using nodeJs, the PEG parser itself is also created at runtime. When generating the PEG.js output seperately (e.g. the parser), a browser friendly parser can be generated and runtime generation of the parser will not be necessary.
+
 
 ## Nice to have
 Now that I have defined a Grammar that does a basic job of parsing VRML in JavaScript, it would be nice to have
