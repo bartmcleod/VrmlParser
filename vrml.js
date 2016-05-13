@@ -207,7 +207,15 @@ vrmlParser = (function() {
         peg$c72 = "DEF",
         peg$c73 = { type: "literal", value: "DEF", description: "\"DEF\"" },
         peg$c74 = function() { return true; },
-        peg$c75 = function(name) { return nodeDefinitions[name]; },
+        peg$c75 = function(name) {
+        	    var obj = nodeDefinitions[name];
+
+        	    if ('function' === typeof obj.clone) {
+        	        return obj.clone();
+        	    }
+
+        	    return obj;
+        	},
         peg$c76 = "USE",
         peg$c77 = { type: "literal", value: "USE", description: "\"USE\"" },
         peg$c78 = "-1",

@@ -231,7 +231,15 @@ def
 
 use_statement
 	= ws use ws name:identifier
-	{ return nodeDefinitions[name]; }
+	{
+	    var obj = nodeDefinitions[name];
+
+	    if ('function' === typeof obj.clone) {
+	        return obj.clone();
+	    }
+
+	    return obj;
+	}
 
 use
 	= "USE"

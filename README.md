@@ -1,9 +1,5 @@
 # VRML Parser
-I started this project by building on top of my earlier improvements of the sequential parsing that Mr. Doob (The author of ThreeJs) had started.
-Half way this project I have taken a different approach, by moving to the PEG.js parser, which is based on Expression Grammar.
-This is a modern approach to writing parsers. All you do is define a grammar (The VRML 97 specification rules, basically) and
-the parser will be generated for you, based on the grammar. You may then use the parsed node tree to create a ThreeJs file
-or in-memory ThreeJs world.
+I started this project by building on top of my earlier improvements of the sequential parsing that Ricardo Cabello alias Mr.Doob (The author of ThreeJs) had started. Half way this project I have taken a different approach, by moving to the PEG.js parser, which is based on Expression Grammar. An Expression Grammar offers a modern approach to writing parsers. All you do is define a grammar (The VRML 97 specification rules, basically) and the parser can be generated for you, based on the grammar. You may then use the parser to parse a VRML file and the resulting parsed node tree to create a ThreeJs file or in-memory ThreeJs world, to be rendered in a browser.
 
 The actual PEG.js grammar is in `vrml.pegjs`.
 
