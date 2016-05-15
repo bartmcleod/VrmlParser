@@ -176,7 +176,7 @@ VrmlParser.Renderer.ThreeJsRenderer.prototype = {
             } else if ( undefined === f.vertexColors[j] ) {
 
               colorIndex = directionIsDown ? colors.length - 1 : 0;
-              f.vertexColors[j] = colors[colorIndex];
+              f.vertexColors[j] = convertVectorToColor(colors[colorIndex]);
 
             }
 
@@ -340,11 +340,11 @@ VrmlParser.Renderer.ThreeJsRenderer.prototype = {
             }
 
             if ( 'IndexedFaceSet' === node.geometry.node ) {
-              if ( false === node.geometry.node.solid ) {
+              //if ( false === node.geometry.node.solid ) {
 
                 object.material.side = THREE.DoubleSide;
 
-              }
+             // }
             }
 
           }
@@ -392,8 +392,7 @@ VrmlParser.Renderer.ThreeJsRenderer.prototype = {
               vertexColors: THREE.VertexColors
             });
 
-            var groundColor = convertVectorToColor(node.groundColor);
-            paintFaces(groundGeometry, radius, node.groundAngle, groundColor, false);
+            paintFaces(groundGeometry, radius, node.groundAngle, node.groundColor, false);
 
             scene.add(new THREE.Mesh(groundGeometry, groundMaterial));
           }
