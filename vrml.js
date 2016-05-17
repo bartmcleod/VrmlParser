@@ -50,8 +50,8 @@ vrmlParser = (function() {
                 n.isDefinition = true;
                 // store node for later re-use
                 nodeDefinitions[name] = n;
-                console.log('Registered as ' + name + ' in nodeDefinitions:');
-                console.log(n);
+                //console.log('Registered as ' + name + ' in nodeDefinitions:');
+                //console.log(n);
                 return n;
             },
         peg$c5 = function(t, pp) {

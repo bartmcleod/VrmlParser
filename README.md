@@ -17,11 +17,13 @@ Originally, `test.wrl` contains the same content as the `house.wrl` from the Thr
 an occasional typo I had to fix to make the parser succeed.
 
 ### How to use the parser in the browser
-@todo: add an example html page
 
 *For your convenience, a pre-parsed `vrml.js` has been added to the project. It is ready for you to use in a browser. It exposes the vrmlParser global variable as the parser.*
 
-To use the parser in the Browser, to cannot make use of the nodeJs approach, you will have to generate a browser friendly version of the parser. It can be generated using the following command:
+*Also, you may serve the example.html file locally, for example using the built-in webserver that comes with php, to see a working example of the VrmlParser and the ThreeJsRenderer. Currently, it offers no navigation options, so you
+can't walk through.*
+
+To use the parser in the Browser, you cannot make use of the nodeJs approach, you will have to generate a browser friendly version of the parser. It can be generated using the following command:
 
 ```
 pegjs -e vrmlParser vrml.pegjs
@@ -77,13 +79,10 @@ error message is correct. Otherwise, please report an issue on github: https://g
 *Refactoring the example VRML loader for ThreeJS to use the experimental grammar based PEG.js parser instead of line by line parsing.*
 
 In order for this to work, the whole stack we used so far has to work in the browser, if we want to do the parsing of the VRML at the same time as rendering it in ThreeJs. We can simplify the milestone by splitting the process:
-1. Write out a ThreeJs JavaScript file that can be used in a browser.
-2. Load the script in an HTML page.
-For this very simple two-step process, the only hard part is generating ThreeJs code, instead of just 
-writing it directly, based on the node tree. The advantages are that it will load faster in your browser, because it's already been parsed and you can make modifications to the generated ThreeJs script,
- so that you will have a new starting point to build on.
- 
-There's even more to it. Not only is the VRML file parsed at runtime, when using nodeJs, the PEG parser itself is also created at runtime. When generating the PEG.js output seperately (e.g. the parser), a browser friendly parser can be generated and runtime generation of the parser will not be necessary.
+1. Generate a parser script that can be used in a browser (see instruction above).
+2. Load the script in an HTML page
+3. Write a ThreeJs renderer to render the output of the parser to a ThreeJs scene.
+4. Integrate the results with the ThreeJs VrmlLoader
 
 
 ## Nice to have
