@@ -28,7 +28,7 @@ pegjs -e vrmlParser vrml.pegjs
 ```
 *See also http://pegjs.org/documentation#generating-a-parser-command-line*
 
-This generates the parser as a JavaScript file, that can be loaded in the html page using a <script> tag like any other JavaScript file.
+This generates the parser as a JavaScript file, that can be loaded in the html page using a &lt;cript&gt; tag like any other JavaScript file.
 
 Note that the options come before the input file name. Running this command will generate the parser in `vrml.js`, which you can then load in the browser. The parser will be available to you as vrmlParser:
 
