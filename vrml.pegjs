@@ -30,7 +30,7 @@
 }
 
 vrml
-	= '#VRML V2.0 utf8' vrml:(node / comment / route)*
+	= '#VRML V2.0 utf8' vrml:(nodeDefinition / node / comment / route)*
 	{
 	    // before returning the root vrml object, enricht it with routes and nodeDefinitions
 		vrml.nodeDefinitions = nodeDefinitions;
@@ -39,19 +39,22 @@ vrml
 	}
 
 /* ----- Node ------ */
+nodeDefinition
+    = ws name:(def ws name:identifier ws { return name; }) n:node
+    {
+        n.name = name;
+        n.isDefinition = true;
+        // store node for later re-use
+        nodeDefinitions[name] = n;
+        //console.log('Registered as ' + name + ' in nodeDefinitions:');
+        //console.log(n);
+        return n;
+    }
 
 node
-	= ws name:(def ws name:identifier ws { return name; })? t:identifier ws begin_node ws pp:( route / property / node / comment )* ws end_node ws
+	= ws t:identifier ws begin_node ws pp:( nodeDefinition / route / property / node / comment )* ws end_node ws
 	{
 		var n = {node: t};
-
-		if ('string' === typeof name) {
-			// this is a definition node
-			n.name = name;
-			n.isDefinition = true;
-			// store node for later re-use
-			nodeDefinitions[name] = n;
-		}
 
 		// node properties are in pp, if pp is not an Inline node, if pp is an inline node, it should be read from the url
 		for (var i=0; i < pp.length; i++) {
@@ -61,9 +64,9 @@ node
 			if (undefined !== p.node) {
 				//console.log(p.node + ' node found');
 
-				// do not confuse childNodes with elements of children [], childNodes are direct children.
-				if (undefined === n.childNodes) {
-					n.childNodes = [];
+				// if the node does not already have children, create children here
+				if (undefined === n.children) {
+					n.children = [];
 				}
 
 				// @todo for an Inline node, we could use the parser (named 'parser') and fs here, to fetch the inline file and parse it
@@ -72,7 +75,7 @@ node
 				@see http://pegjs.org/documentation#grammar-syntax-and-semantics
 				The code inside the predicate can also access the parser object using the parser variable and options passed to the parser using the options variable.
 				*/
-				n.childNodes.push(p);
+				n.children.push(p);
 
 			} else if (undefined !== p.name) {
 				// p is a property
@@ -153,6 +156,7 @@ value "value"
   / face
   / null
   / true
+  / nodeDefinition
   / node
   / rotation
   / point
@@ -233,6 +237,11 @@ use_statement
 	= ws use ws name:identifier
 	{
 	    var obj = nodeDefinitions[name];
+
+	    if (undefined === obj) {
+	        console.log(name + ' not found in nodeDefinitions');
+	        return obj; // undefined obj
+	    }
 
 	    if ('function' === typeof obj.clone) {
 	        return obj.clone();
