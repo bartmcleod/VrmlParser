@@ -78,12 +78,12 @@ error message is correct. Otherwise, please report an issue on github: https://g
 ### Previous Milestone
 *Refactoring the example VRML loader for ThreeJS to use the experimental grammar based PEG.js parser instead of line by line parsing.*
 
-This Milestone is in Proof Of Concept phase now. There is a PR for Mr.Doob to review and give his recommendations regarding integration of the VrmlParser library in ThreeJs. If you clone my fork of ThreeJs you can already use the new version of the VRML loader example page at examples/webgl_loader_vrml.html
+This Milestone is in Proof Of Concept phase now. There is a PR for Mr.Doob to review and give his recommendations regarding integration of the VrmlParser library in ThreeJs. If you clone my fork of ThreeJs you can already use the new version of the VRML loader example page at `examples/webgl_loader_vrml.html`.
 
 ### Next Milestone
 *Adding support for all VRML 97 nodes, including animation to the VrmlParser renderer for ThreeJs (VrmlParser.Renderer.ThreeJs).*
 
-Since converting animations is something requested by some, I will focus on converting animations first and add support for mode nodes along the way.
+Since converting animations is something requested by some, I will focus on converting animations first and add support for more nodes along the way.
 
 Regarding support for more nodes, there are several refactorings that could be done:
  - Parsing can be made more strict, by making the identifier that is currently used in the PEG.js grammar use a list of valid choices for node types instead of just some characters. This will prevent invalid node types from making
