@@ -71,18 +71,30 @@ error message is correct. Otherwise, please report an issue on github: https://g
 ## Milestones
 1. Working, experimental grammar, based on experience, memory and sample files. It should be able to parse house.wrl, from the ThreeJs examples.
 2. Refactoring the example VRML loader for ThreeJS to use the experimental grammar based PEG.js parser instead of line by line parsing.
-3. Adding support for all parsed nodes, including animation to the VRML loader from the ThreeJS examples.
+3. Adding support for all VRML 97 nodes, including animation to the VrmlParser renderer for ThreeJs (VrmlParser.Renderer.ThreeJs).
 4. Refining the parser to support the VRML 97 specification more closely, based on the specification and strict test files.
 5. Automated testing
 
-### Next Milestone
+### Previous Milestone
 *Refactoring the example VRML loader for ThreeJS to use the experimental grammar based PEG.js parser instead of line by line parsing.*
 
-In order for this to work, the whole stack we used so far has to work in the browser, if we want to do the parsing of the VRML at the same time as rendering it in ThreeJs. We can simplify the milestone by splitting the process:
-1. Generate a parser script that can be used in a browser (see instruction above).
-2. Load the script in an HTML page
-3. Write a ThreeJs renderer to render the output of the parser to a ThreeJs scene.
-4. Integrate the results with the ThreeJs VrmlLoader
+This Milestone is in Proof Of Concept phase now. There is a PR for Mr.Doob to review and give his recommendations regarding integration of the VrmlParser library in ThreeJs. If you clone my fork of ThreeJs you can already use the new version of the VRML loader example page at examples/webgl_loader_vrml.html
+
+### Next Milestone
+*Adding support for all VRML 97 nodes, including animation to the VrmlParser renderer for ThreeJs (VrmlParser.Renderer.ThreeJs).*
+
+Since converting animations is something requested by some, I will focus on converting animations first and add support for mode nodes along the way.
+
+Regarding support for more nodes, there are several refactorings that could be done:
+ - Parsing can be made more strict, by making the identifier that is currently used in the PEG.js grammar use a list of valid choices for node types instead of just some characters. This will prevent invalid node types from making
+their way into the parsed node tree. In fact, the parsing will likely fail, which could be a disadvantage, but will definitely be more accurate.
+ - Instead of using a switch in the VrmlParser.Renderer.ThreeJs to treat different nodes differently, each node could
+be handled by its own class. This would lead to clearer code that is easier to maintain and extend. There could be some kind of registration process by type, so that the entire switch can go away and we can simply check if a renderer class has been registered for a given type. This would also make it extendable, as we could allow to unregister renderer classes, register mulitple classes or different ones.
+ - The term rendering should be reconsidered, because rendering in the 3d community means something different then just converting the VRML nodes to ThreeJs objects. I will probably be renaming render to convert where applicable.
+
+
+
+
 
 
 ## Nice to have
