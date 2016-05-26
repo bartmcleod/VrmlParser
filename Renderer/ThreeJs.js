@@ -13,12 +13,13 @@ if ( 'undefined' === typeof VrmlParser.Renderer ) {
   VrmlParser.Renderer = {};
 }
 
-VrmlParser.Renderer.ThreeJsRenderer = function () {
+VrmlParser.Renderer.ThreeJs = function () {
 };
 
-VrmlParser.Renderer.ThreeJsRenderer.prototype = {
+VrmlParser.Renderer.ThreeJs.prototype = {
   REVISION: 1,
-  constructor: VrmlParser.Renderer.ThreeJsRenderer,
+  constructor: VrmlParser.Renderer.ThreeJs,
+  
 
   log: function () {
     console.log.apply(console, arguments);
@@ -377,7 +378,9 @@ VrmlParser.Renderer.ThreeJsRenderer.prototype = {
 
           }
 
-          scene.add(new THREE.Mesh(skyGeometry, skyMaterial));
+          var sky = new THREE.Mesh(skyGeometry, skyMaterial);
+          sky.userData.originalVrmlNode = node;
+          scene.add(sky);
 
           // ground (half sphere):
 
@@ -394,7 +397,9 @@ VrmlParser.Renderer.ThreeJsRenderer.prototype = {
 
             paintFaces(groundGeometry, radius, node.groundAngle, node.groundColor, false);
 
-            scene.add(new THREE.Mesh(groundGeometry, groundMaterial));
+            var ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.userData.originalVrmlNode = node;
+            scene.add(ground);
           }
 
           break;

@@ -85,12 +85,14 @@ This Milestone is in Proof Of Concept phase now. There is a PR for Mr.Doob to re
 
 Since converting animations is something requested by some, I will focus on converting animations first and add support for more nodes along the way.
 
+To help with converting animations I would like to have some diagnostic information on the objects in 3D. Some sort of editor mode or inspection panel, where I can see which part of the object was clicked.
+
 Regarding support for more nodes, there are several refactorings that could be done:
- - Parsing can be made more strict, by making the identifier that is currently used in the PEG.js grammar use a list of valid choices for node types instead of just some characters. This will prevent invalid node types from making
+ * Parsing can be made more strict, by making the identifier that is currently used in the PEG.js grammar use a list of valid choices for node types instead of just some characters. This will prevent invalid node types from making
 their way into the parsed node tree. In fact, the parsing will likely fail, which could be a disadvantage, but will definitely be more accurate.
- - Instead of using a switch in the VrmlParser.Renderer.ThreeJs to treat different nodes differently, each node could
+ * Instead of using a switch in the VrmlParser.Renderer.ThreeJs to treat different nodes differently, each node could
 be handled by its own class. This would lead to clearer code that is easier to maintain and extend. There could be some kind of registration process by type, so that the entire switch can go away and we can simply check if a renderer class has been registered for a given type. This would also make it extendable, as we could allow to unregister renderer classes, register mulitple classes or different ones.
- - The term rendering should be reconsidered, because rendering in the 3d community means something different then just converting the VRML nodes to ThreeJs objects. I will probably be renaming render to convert where applicable.
+ * The term rendering should be reconsidered, because rendering in the 3d community means something different then just converting the VRML nodes to ThreeJs objects. I will probably be renaming render to convert where applicable.
 
 
 
