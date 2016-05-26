@@ -18,6 +18,20 @@ if ( 'undefined' === typeof VrmlParser.Renderer.ThreeJs ) {
 }
 
 if ( 'undefined' === typeof VrmlParser.Renderer.ThreeJs.Animation ) {
+  /**
+   * Offers support for interaction and animation.
+   *
+   * Currently support clicking an object and seeing a log message for that.
+   *
+   * Also, in debug mode, a blue line will be drawn from the perspective camera to the clicked point.
+   * You can see this line when zooming out after clicking and object.
+   * 
+   * @param scene
+   * @param camera
+   * @param renderer
+   * @param debug
+   * @constructor
+   */
   VrmlParser.Renderer.ThreeJs.Animation = function (scene, camera, renderer, debug) {
     // @todo: support for multiple cameras or just re-initialize with a new camera when switched to one?
     this.camera = camera;
