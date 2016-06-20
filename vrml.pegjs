@@ -26,7 +26,7 @@
  */
 {
 	var nodeDefinitions = {};
-	var routes = [];
+	var routes = {};
 }
 
 vrml
@@ -198,9 +198,14 @@ comment
 route
 	= ws "ROUTE" ws src:route_part ws "TO"  ws target:route_part ws
 	{
+	    // create an index that is the name of the source node, for later retrieval of the route by name of the source
+	    var index = src.name;
 	    var route = { source: src, target: target };
 	    // put it in the global routes collection
-	    routes.push(route);
+	    if ('undefined' === typeof routes[index]) {
+	        routes[index] = [];
+	    }
+	    routes[index].push(route);
 	    return route;
 	}
 

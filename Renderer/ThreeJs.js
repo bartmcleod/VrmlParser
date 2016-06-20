@@ -19,7 +19,6 @@ VrmlParser.Renderer.ThreeJs = function () {
 VrmlParser.Renderer.ThreeJs.prototype = {
   REVISION: 1,
   constructor: VrmlParser.Renderer.ThreeJs,
-  
 
   log: function () {
     console.log.apply(console, arguments);
@@ -218,10 +217,16 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
       // this will be the returned ThreeJS object returned from parseNode, if not overwritten
       var object = new THREE.Object3D();
+      var surroundingGroup = false;
 
       switch ( node.node ) {
+        case 'OrientationInterpolator':
+          // only keeping the object, because we are interested in its original values
+          break;
         case 'Group':
         case 'Transform':
+          // Group is basically the same as Object3D, only the type is set to Group
+          object = new THREE.Group;
           if ( node.has('children') ) {
             // sugar
             node.children.has = has;
@@ -234,6 +239,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
               for ( var i = 0; i < node.children.length; i++ ) {
 
                 var child = node.children[i];
+                child.has = has;
                 var threeJsObj = parseNode(child);
                 if ( false !== threeJsObj ) {
                   object.add(threeJsObj);
@@ -243,9 +249,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             }
           }
 
+          var t = {x: 0, y: 0, z: 0};
+
           if ( node.has('translation') ) {
 
-            var t = node.translation;
+            t = node.translation;
 
             object.position.set(t.x, t.y, t.z);
 
@@ -266,8 +274,24 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             object.scale.set(s.x, s.y, s.z);
 
           }
-          break;
 
+
+          // support for center requires an extra group, which we will add allways, to ensure predictable behavior
+          // the name of the surrounding group will later become the name of the object prefixed with 'surrounding_'
+          surroundingGroup = new THREE.Group();
+
+          if ( node.has('center') ) {
+            var center = node.center;
+            // this will be the axis of rotation, how to apply?
+            // by creating a group around the group, setting its position to the center
+            // and then translate the innerGroup back to its original position
+            surroundingGroup.position.set(t.x + center.x, t.y + center.y, t.z + center.z);
+            //surroundingGroup.position.set(10,0,-2);
+            object.position.set(0 - center.x, 0 - center.y, 0 - center.z);
+          }
+
+          surroundingGroup.add(object);
+          break;
         case 'Shape':
           object = new THREE.Mesh();
 
@@ -343,9 +367,9 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             if ( 'IndexedFaceSet' === node.geometry.node ) {
               //if ( false === node.geometry.node.solid ) {
 
-                object.material.side = THREE.DoubleSide;
+              object.material.side = THREE.DoubleSide;
 
-             // }
+              // }
             }
 
           }
@@ -399,6 +423,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
             var ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.userData.originalVrmlNode = node;
+            ground.receiveShadow = true;
             scene.add(ground);
           }
 
@@ -511,6 +536,21 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           object.computeBoundingSphere();
 
           break;
+        case 'TouchSensor':
+          // just explicitly keep the object (by not setting it to false), do nothing else
+          if ( this.debug ) {
+            // in debug mode, add a ten x ten cm cube to indicate the presence of a touchsensor
+            // @todo: register this with a legenda
+            object = new THREE.Mesh();
+            object.geometry = new THREE.CubeGeometry(0.1, 0.1, 0.1);
+            object.material = new THREE.MeshNormalMaterial();
+            object.material.color = new THREE.Color(0.5, 0.5, 0.5);
+          }
+          break;
+        default:
+          // unsupported nodes will not be added to the scene as an object
+          object = false;
+          break;
       }
 
       if ( false !== object ) {
@@ -527,6 +567,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
         object.castShadow = true;
         object.receiveShadow = true;
       }
+
+      if (false !== surroundingGroup) {
+        surroundingGroup.name = 'surrounding_' + object.name;
+        return surroundingGroup;
+      }
       return object;
     };
 
@@ -537,9 +582,10 @@ VrmlParser.Renderer.ThreeJs.prototype = {
       }
     }
 
+    scene.userData.routes = nodeTree.routes;
     console.log(scene);
+
     // @todo: parse nodeTree.nodeDefinitions
-    // @todo: parse nodeTree.routes
 
   }
 

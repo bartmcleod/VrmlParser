@@ -181,9 +181,14 @@ vrmlParser = (function() {
         peg$c51 = "TO",
         peg$c52 = { type: "literal", value: "TO", description: "\"TO\"" },
         peg$c53 = function(src, target) {
+        	    // create an index that is the name of the source node, for later retrieval of the route by name of the source
+        	    var index = src.name;
         	    var route = { source: src, target: target };
         	    // put it in the global routes collection
-        	    routes.push(route);
+        	    if ('undefined' === typeof routes[index]) {
+        	        routes[index] = [];
+        	    }
+        	    routes[index].push(route);
         	    return route;
         	},
         peg$c54 = function(name, property) { return { name: name, property: property }; },
@@ -2211,7 +2216,7 @@ vrmlParser = (function() {
 
 
     	var nodeDefinitions = {};
-    	var routes = [];
+    	var routes = {};
 
 
     peg$result = peg$startRuleFunction();

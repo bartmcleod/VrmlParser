@@ -25,7 +25,7 @@ if ( 'undefined' === typeof VrmlParser.Renderer.ThreeJs.Animation ) {
    *
    * Also, in debug mode, a blue line will be drawn from the perspective camera to the clicked point.
    * You can see this line when zooming out after clicking and object.
-   * 
+   *
    * @param scene
    * @param camera
    * @param renderer
@@ -38,10 +38,118 @@ if ( 'undefined' === typeof VrmlParser.Renderer.ThreeJs.Animation ) {
     this.scene = scene;
     this.renderer = renderer;
     this.debug = debug ? true : false;
+    this.animations = {};
   };
 }
 
 VrmlParser.Renderer.ThreeJs.Animation.prototype = {
+  /**
+   * Updates or registered animations with a delta from the global clock.
+   *
+   * @param delta
+   */
+  update: function (delta) {
+    for ( var a in this.animations ) {
+      if ( !this.animations.hasOwnProperty(a) ) {
+        continue;
+      }
+      var callback = this.animations[a];
+      callback(delta);
+    }
+  },
+
+  /**
+   * Register a callback for the animations, it will be called at each tick with a delta
+   * from the global clock.
+   *
+   * @param callback
+   */
+  addAnimation: function (name, callback) {
+    this.animations[name] = callback;
+  },
+
+  /**
+   * Gets all routes that were registered for a sensor in the original VRML world.
+   *
+   * Returned routes have a source and target object. Each have a name and event property.
+   *
+   * @param string name Name of the source node of the event.
+   * @returns {*}
+   */
+  getRoutesForEvent: function (name) {
+    var routesRegistry = this.scene.userData.routes;
+    var routes = routesRegistry[name];
+    //console.log('The routes are:');
+
+    for ( var r = 0; r < routes.length; r++ ) {
+      //console.log(routes[r]);
+    }
+    return routes;
+  },
+
+  /**
+   * Recursively finds all targetroutes for a given route.
+   *
+   * @param triggerRoute
+   * @returns {boolean}
+   */
+  findTargetRoutes: function (triggerRoute) {
+    var targetRoutes = [];
+
+    if ( 'undefined' === typeof triggerRoute ) {
+      return targetRoutes;
+    }
+
+    var routesRegistry = this.scene.userData.routes;
+
+    if ( 'undefined' === typeof routesRegistry[triggerRoute.target.name] ) {
+      // this is the leaf route
+      return triggerRoute;
+    }
+
+    // 1. Find first level of targetRoutes (they can be chained)
+    var routes = routesRegistry[triggerRoute.target.name];
+
+    // find all the target routes of intermediate routes
+    for ( var i = 0; i < routes.length; i++ ) {
+
+      var route = routes[i];
+
+      // verify if the route has yet another target (it is an intermediate route)
+
+      // 2. Find targetroutes of intermediate route, create a nested array
+      var nestedTargetRoutes = this.findTargetRoutes(route);
+      targetRoutes.push(nestedTargetRoutes);
+    }
+
+    // 3. Return targetroute
+    return targetRoutes;
+  },
+
+  /**
+   * Temporary utility to find the largest amount of rotation specified in an OrientationInterpolator.
+   *
+   * @param orientationInterpolator
+   */
+  findTargetRadians: function (orientationInterpolator) {
+    var targetRadians;
+    var startRadians = orientationInterpolator.keyValue[0].radians;
+    var lastDiff = 0;
+
+    for ( var i = 0; i < orientationInterpolator.keyValue.length; i++ ) {
+      var radians = orientationInterpolator.keyValue[i].radians;
+      var diff = Math.abs(radians - startRadians);
+      if ( diff > lastDiff ) {
+        targetRadians = radians;
+        lastDiff = diff;
+      }
+    }
+
+    console.log('targetRadians:' + targetRadians);
+
+    return targetRadians;
+  },
+
   /**
    * Support clicking the scene.
    *
@@ -94,11 +202,104 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
           'undefined' !== typeof firstIntersect.userData
           && 'undefined' !== typeof firstIntersect.userData.originalVrmlNode
         ) {
-          console.log(firstIntersect.userData.originalVrmlNode.node);
+          //console.log(firstIntersect.userData.originalVrmlNode);
+          // check if a TouchSensor was registered with the parent
+          if ( 'undefined' !== typeof firstIntersect.parent ) {
+            for ( var b = 0; b < firstIntersect.parent.children.length; b++ ) {
+              var checkNode = firstIntersect.parent.children[b];
+              if ( 'undefined' !== typeof checkNode.userData.originalVrmlNode && 'TouchSensor' === checkNode.userData.originalVrmlNode.node ) {
+                // do a proof of concept here, but ideally, only trigger an already registered animation
+                // @todo: register animation for TouchSensor by the name of the TouchSensor
+                /*
+                 For a quick proof of concept, you can use slerp and the endpoint of a rotation interpolator
+                 from the orignial animation. For that you need to combine the routes and get the names.
+                 */
+                // find the first route, we only use TimeSensor to get from one to the next
+                var touch = checkNode.name;
+                console.log('touch: ' + touch);
+
+                var routes = scope.getRoutesForEvent(touch);
+
+                // naive, only use first
+                var targetRoutes = scope.findTargetRoutes(routes.pop());
+
+                // again, naive (good usecase for map reduce?
+                var targetRoute = targetRoutes;
+
+                while ( 'function' === typeof targetRoute.pop ) {
+                  targetRoute = targetRoute.pop();
+
+                  if ('undefined' === typeof targetRoute) {
+                    console.log('no target route found for '+ touch);
+                    return;
+                  }
+                }
+
+                // we found the leaf targetRoute
+                console.log('target: ' + targetRoute);
+
+                // again naive, assumptions:
+                /*
+                 *  1. source is an OrientationInterpolator
+                 *  2. target is the groupLevel parent, but axis and radians has to be taken from original target
+                 * */
+                var OrientationInterpolator = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
+                // find the start radians and max radians and use those to do a slerp. Then after a timeout, slerp back.
+                // NOTE: this ia naive interpretation of one specific sort of animation, to do an exact replication, we also need
+                // the timesensor and replicate every step using the keys of the orientationInterpolator.
+                var targetRadians = scope.findTargetRadians(OrientationInterpolator);
+                var startRadians = OrientationInterpolator.keyValue[0].radians;
+
+                var name = 'surrounding_' + targetRoute.target.name;
+                var groupLevelParent = scene.getObjectByName(name);
+
+                // POC
+
+                var radians = startRadians;
+                /** @var THREE.Object3D firstIntersect */
+                if ( 'undefined' === typeof groupLevelParent.quaternion ) {
+                  groupLevelParent.quaternion = new THREE.Quaternion(0, 1, 0, startRadians);
+                }
+
+                var diff = targetRadians - startRadians;
+                var incremented = 0;
+                var multiplication = 200;
+
+                /**
+                 * The animation callback, @todo: unregister it when done?
+                 * @param delta
+                 */
+                var callback = function (delta) {
+
+                  // absolute cumulated increment must be smaller than the difference in radians
+                  if (Math.abs(incremented) >= Math.abs(diff)) {
+                    //console.log('Stopped because incremented of ' + incremented + ' is larger than diff of ' + diff);
+                    return; // done
+                  }
+
+                  //console.log(diff);
+                  //console.log(incremented);
+
+
+                  // absolute radians
+                  radians += multiplication * delta;
+
+                  // relative incremented radians, to be compared with the difference.
+                  incremented += multiplication * delta;
+
+                  var targetQuaternion = new THREE.Quaternion(0, 1, 0, radians);
+
+                  //console.log(groupLevelParent.quaternion);
+                  groupLevelParent.quaternion.slerp(targetQuaternion, 0.01).normalize();
+                };
+                scope.addAnimation(touch, callback);
+              }
+            }
+          }
         }
       }
 
-      if (true === scope.debug) {
+      if ( true === scope.debug ) {
         // draw a line where the object was clicked
         if ( null !== line ) {
           scene.remove(line);
