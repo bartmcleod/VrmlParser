@@ -4,7 +4,7 @@ I started this project by building on top of my earlier improvements of the sequ
 The actual PEG.js grammar is in `vrml.pegjs`.
 
 ## Installation
-You need to install node, npm and pegjs-require.
+Run `npm install` in the root directory of the project. This means you will have to install NodeJs before you can run this command.
 
 ## Usage
 The parser is implemented in JavaScript and can be run by node from the command line. An example is added: `vrml-parser.js`. Just run
@@ -66,7 +66,9 @@ error message is correct. Otherwise, please report an issue on github: https://g
 2. npm
 3. pegjs-require
 4. fs
-5. php, if you want to merge multiple VRML files into one.
+5. php, if you want to merge multiple VRML files into one or if you want to use the built-in webserver to serve your files.
+
+Once you have installed NodeJs, you can just run `npm install` to install the other dependencies. php Is entirely optional and won't be installed by the command. If you want to run a local webserver, there are many options, not only php.
 
 ## Milestones
 1. Working, experimental grammar, based on experience, memory and sample files. It should be able to parse house.wrl, from the ThreeJs examples.

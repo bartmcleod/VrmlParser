@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Proof of Concept VRML loading with ThreeJs and VrmlParser</title>
+    <title>VRML loading with ThreeJs and VrmlParser</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
@@ -39,10 +39,17 @@
     vrml format loader test using VrmlParser -
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.js"></script>
+<script src="node_modules/three/build/three.js"></script>
+<!--<script src="node_modules/three/build/three.min.js"></script>-->
 
 <script src="vrml.js"></script>
-<script src="Renderer/ThreeJsRenderer.js"></script>
+<script src="Renderer/ThreeJs.js"></script>
+<script src="Renderer/ThreeJs/Animation.js"></script>
+
+<script src="node_modules/three/examples/js/renderers/Projector.js"></script>
+<script src="node_modules/three/examples/js/controls/OrbitControls.js"></script>
+<script src="node_modules/three/examples/js/controls/FirstPersonControls.js"></script>
+<script src="node_modules/three/examples/js/controls/TrackballControls.js"></script>
 
 <script type="x-shader/x-vertex" id="vertexShader">
 
@@ -88,6 +95,12 @@
 
     var cross;
 
+    var animation;
+
+
+    // setup a clock
+    var clock = new THREE.Clock();
+
     init();
     animate();
 
@@ -103,17 +116,39 @@
 
         scene.add(camera);
 
+        // setup controls
+        controls = new THREE.OrbitControls(camera);
+        controls.rotateSpeed = 1;
+        controls.zoomSpeed = 0.2;
+        controls.panSpeed = 0.2;
+
+        controls.enableZoom = true;
+        controls.enablePan = true;
+
         // light
 
         var dirLight = new THREE.DirectionalLight(0xffffff);
         dirLight.position.set(200, 200, 1000).normalize();
+        dirLight.castShadow = true;
 
-        var ambientLight = new THREE.AmbientLight(0x444444);
-        dirLight.position.set(-200, -200, 1000).normalize();
+//        var ambientLight = new THREE.AmbientLight(0x444444);
+//        dirLight.position.set(-200, -200, 1000).normalize();
 
         camera.add(dirLight);
-        scene.add(ambientLight);
+//        scene.add(ambientLight);
         camera.add(dirLight.target);
+
+        var vrmlConverter = new VrmlParser.Renderer.ThreeJs();
+        // renderer
+
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.shadowMap.enabled = true;
+        renderer.setClearColor(0x000000, 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // add support for animation and interaction
+        var debug = true;
+        animation = new VrmlParser.Renderer.ThreeJs.Animation(scene, camera, renderer, debug);
+        animation.addClickSupport();
 
         // VRML parser example:
         var xhrLoader = new THREE.XHRLoader();
@@ -132,8 +167,8 @@
                 return;
             }
             console.log(tree);
-            var renderer = new VrmlParser.Renderer.ThreeJsRenderer();
-            renderer.render(tree, scene);
+
+            vrmlConverter.render(tree, scene);
 
         }, function () {
         }, function (error) {
@@ -143,12 +178,6 @@
             }
             console.log(error);
         });
-
-        // renderer
-
-        renderer = new THREE.WebGLRenderer({antialias: true});
-        renderer.setClearColor(0x000000, 1);
-        renderer.setSize(window.innerWidth, window.innerHeight);
 
         container = document.createElement('div');
         document.body.appendChild(container);
@@ -170,12 +199,12 @@
 
     }
 
+
     function animate() {
-
         requestAnimationFrame(animate);
-
+        controls.update(clock.getDelta());
+        animation.update(clock.getDelta());
         renderer.render(scene, camera);
-
     }
 
 </script>
