@@ -20,5 +20,6 @@
     "three": "*",
     "pegjs-require": "*",
     "fs": "*"
-  }
+  },
+  "license": "MIT"
 }
