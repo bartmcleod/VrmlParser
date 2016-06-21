@@ -138,15 +138,16 @@
 //        scene.add(ambientLight);
         camera.add(dirLight.target);
 
-        var vrmlConverter = new VrmlParser.Renderer.ThreeJs();
+        var debug = true;
+        var vrmlConverter = new VrmlParser.Renderer.ThreeJs(debug);
         // renderer
 
         renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.shadowMap.enabled = true;
         renderer.setClearColor(0x000000, 1);
         renderer.setSize(window.innerWidth, window.innerHeight);
+
         // add support for animation and interaction
-        var debug = true;
         animation = new VrmlParser.Renderer.ThreeJs.Animation(scene, camera, renderer, debug);
         animation.addClickSupport();
 

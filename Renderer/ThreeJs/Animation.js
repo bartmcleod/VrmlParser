@@ -218,7 +218,8 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
                 var touch = checkNode.name;
                 console.log('touch: ' + touch);
 
-                var routes = scope.getRoutesForEvent(touch);
+                // work on a clone [slice(0)] of the routes, otherwise, using pop() will make the array useless for next time
+                var routes = scope.getRoutesForEvent(touch).slice(0);
 
                 // naive, only use first
                 var targetRoutes = scope.findTargetRoutes(routes.pop());
@@ -256,14 +257,15 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
                 // POC
 
                 var radians = startRadians;
+                var startQuaternion = new THREE.Quaternion(0, 1, 0, startRadians);
+
                 /** @var THREE.Object3D firstIntersect */
                 if ( 'undefined' === typeof groupLevelParent.quaternion ) {
-                  groupLevelParent.quaternion = new THREE.Quaternion(0, 1, 0, startRadians);
+                  groupLevelParent.quaternion = startQuaternion;
                 }
 
-                var diff = targetRadians - startRadians;
-                var incremented = 0;
-                var multiplication = 200;
+                var multiplication = 50;
+                var increment = 0.01;
 
                 /**
                  * The animation callback, @todo: unregister it when done?
@@ -271,26 +273,23 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
                  */
                 var callback = function (delta) {
 
-                  // absolute cumulated increment must be smaller than the difference in radians
-                  if (Math.abs(incremented) >= Math.abs(diff)) {
-                    //console.log('Stopped because incremented of ' + incremented + ' is larger than diff of ' + diff);
-                    return; // done
+                  if (targetRadians < 0) {
+                    delta = -1 * delta;
+                    if (radians - increment <= targetRadians) {
+                      console.log('stopped, because ' + radians + ' is smaller than ' + targetRadians);
+                      return;
+                    }
+                  } else if (radians + increment >= targetRadians) {
+                    console.log('stopped, because ' + radians + ' is larger than ' + targetRadians);
+                    return;
                   }
 
-                  //console.log(diff);
-                  //console.log(incremented);
-
-
-                  // absolute radians
                   radians += multiplication * delta;
-
-                  // relative incremented radians, to be compared with the difference.
-                  incremented += multiplication * delta;
 
                   var targetQuaternion = new THREE.Quaternion(0, 1, 0, radians);
 
                   //console.log(groupLevelParent.quaternion);
-                  groupLevelParent.quaternion.slerp(targetQuaternion, 0.01).normalize();
+                  groupLevelParent.quaternion.slerp(targetQuaternion, increment).normalize();
                 };
                 scope.addAnimation(touch, callback);
               }

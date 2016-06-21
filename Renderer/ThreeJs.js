@@ -13,10 +13,12 @@ if ( 'undefined' === typeof VrmlParser.Renderer ) {
   VrmlParser.Renderer = {};
 }
 
-VrmlParser.Renderer.ThreeJs = function () {
+VrmlParser.Renderer.ThreeJs = function (debug) {
+  this.debug = debug ? true : false;
 };
 
 VrmlParser.Renderer.ThreeJs.prototype = {
+  debug: false,
   REVISION: 1,
   constructor: VrmlParser.Renderer.ThreeJs,
 
@@ -37,6 +39,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
    * @param THREE.Scene scene
    */
   render: function (nodeTree, scene) {
+
+    var scope = this;
 
     console.log('VrmlParser.Renderer.ThreeJsRenderer ' + this.REVISION);
 
@@ -274,7 +278,6 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             object.scale.set(s.x, s.y, s.z);
 
           }
-
 
           // support for center requires an extra group, which we will add allways, to ensure predictable behavior
           // the name of the surrounding group will later become the name of the object prefixed with 'surrounding_'
@@ -538,7 +541,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           break;
         case 'TouchSensor':
           // just explicitly keep the object (by not setting it to false), do nothing else
-          if ( this.debug ) {
+          if ( scope.debug ) {
             // in debug mode, add a ten x ten cm cube to indicate the presence of a touchsensor
             // @todo: register this with a legenda
             object = new THREE.Mesh();
@@ -568,7 +571,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
         object.receiveShadow = true;
       }
 
-      if (false !== surroundingGroup) {
+      if ( false !== surroundingGroup ) {
         surroundingGroup.name = 'surrounding_' + object.name;
         return surroundingGroup;
       }
