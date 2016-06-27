@@ -62,10 +62,19 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    * Register a callback for the animations, it will be called at each tick with a delta
    * from the global clock.
    *
+   * @param name
    * @param callback
    */
   addAnimation: function (name, callback) {
     this.animations[name] = callback;
+  },
+
+  /**
+   * Unregister a callback for the animations.
+   * @param name
+   */
+  removeAnimation: function (name) {
+    delete this.animations[name];
   },
 
   /**
@@ -230,8 +239,8 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
                 while ( 'function' === typeof targetRoute.pop ) {
                   targetRoute = targetRoute.pop();
 
-                  if ('undefined' === typeof targetRoute) {
-                    console.log('no target route found for '+ touch);
+                  if ( 'undefined' === typeof targetRoute ) {
+                    console.log('no target route found for ' + touch);
                     return;
                   }
                 }
@@ -257,40 +266,63 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
                 // POC
 
                 var radians = startRadians;
-                var startQuaternion = new THREE.Quaternion(0, 1, 0, startRadians);
+                var startQuaternion = new THREE.Quaternion();
+                startQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRadians);
 
                 /** @var THREE.Object3D firstIntersect */
-                if ( 'undefined' === typeof groupLevelParent.quaternion ) {
-                  groupLevelParent.quaternion = startQuaternion;
+                //groupLevelParent.quaternion.slerp(startQuaternion, 1);
+
+                var increment = 0.1;
+                var logCount = 0;
+
+                var targetQuaternion = new THREE.Quaternion();
+                targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRadians);
+
+                var negative = targetRadians < startRadians;
+
+                // figure out we want to inverse the animation (when it has played)
+                // because of small rounding differences, we will round ourselves
+                var groupQuaternionWCoordinate = Math.round(groupLevelParent.quaternion.w * 10000);
+                var targetQuaternionWCoordinate = Math.round(targetQuaternion.w * 10000);
+                var inverted = false;
+
+                if ( groupQuaternionWCoordinate <= targetQuaternionWCoordinate ) {
+                  console.log('can be reverted, has already played');
+                  // we invert it here, by setting the radians to the start radians
+                  targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), startRadians);
+                  inverted = true;
                 }
 
-                var multiplication = 50;
-                var increment = 0.01;
-
                 /**
-                 * The animation callback, @todo: unregister it when done?
+                 * The animation callback
+                 *
                  * @param delta
                  */
                 var callback = function (delta) {
 
-                  if (targetRadians < 0) {
-                    delta = -1 * delta;
-                    if (radians - increment <= targetRadians) {
-                      console.log('stopped, because ' + radians + ' is smaller than ' + targetRadians);
-                      return;
-                    }
-                  } else if (radians + increment >= targetRadians) {
-                    console.log('stopped, because ' + radians + ' is larger than ' + targetRadians);
-                    return;
+                  groupLevelParent.quaternion.slerp(targetQuaternion, increment).normalize();
+
+                  // because of small rounding differences, we will round ourselves
+                  groupQuaternionWCoordinate = Math.round(groupLevelParent.quaternion.w * 10000);
+                  targetQuaternionWCoordinate = Math.round(targetQuaternion.w * 10000);
+
+                  if (
+                    (false === inverted && groupQuaternionWCoordinate <= targetQuaternionWCoordinate)
+                    ||
+                    (true === inverted && groupQuaternionWCoordinate >= targetQuaternionWCoordinate)
+                  ) {
+                    console.log('target quaternion reached, remove animation');
+                    scope.removeAnimation(touch);
                   }
 
-                  radians += multiplication * delta;
-
-                  var targetQuaternion = new THREE.Quaternion(0, 1, 0, radians);
-
-                  //console.log(groupLevelParent.quaternion);
-                  groupLevelParent.quaternion.slerp(targetQuaternion, increment).normalize();
+                  if ( logCount % 1500 === 0 ) {
+                    console.log('w group ' + groupLevelParent.quaternion.w);
+                    console.log('w target ' + targetQuaternion.w);
+                    console.log('targetRadians: ' + targetRadians);
+                    console.log('startRadians: ' + startRadians);
+                  }
                 };
+
                 scope.addAnimation(touch, callback);
               }
             }
