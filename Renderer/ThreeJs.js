@@ -283,15 +283,18 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           // the name of the surrounding group will later become the name of the object prefixed with 'surrounding_'
           surroundingGroup = new THREE.Group();
 
-          if ( node.has('center') ) {
-            var center = node.center;
-            // this will be the axis of rotation, how to apply?
-            // by creating a group around the group, setting its position to the center
-            // and then translate the innerGroup back to its original position
-            surroundingGroup.position.set(t.x + center.x, t.y + center.y, t.z + center.z);
-            //surroundingGroup.position.set(10,0,-2);
-            object.position.set(0 - center.x, 0 - center.y, 0 - center.z);
+          if ( !node.has('center') ) {
+            // setup a default center
+            node.center = {x: 0, y: 0, z: 0};
           }
+
+          var center = node.center;
+          // this will be the axis of rotation, how to apply?
+          // by creating a group around the group, setting its position to the center
+          // and then translate the innerGroup back to its original position
+          surroundingGroup.position.set(t.x + center.x, t.y + center.y, t.z + center.z);
+          //surroundingGroup.position.set(10,0,-2);
+          object.position.set(0 - center.x, 0 - center.y, 0 - center.z);
 
           surroundingGroup.add(object);
           break;

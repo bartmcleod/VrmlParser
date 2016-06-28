@@ -2055,7 +2055,6 @@ ROUTE achterDeuropen.value_changed TO achterdeur.rotation
 
 #schuurdeur
 DEF schuurdeur Transform {
-    center 0 0 0 
     children [
 
         DEF klikopschuurdeur TouchSensor {}
