@@ -2055,37 +2055,38 @@ ROUTE achterDeuropen.value_changed TO achterdeur.rotation
 
 #schuurdeur
 DEF schuurdeur Transform {
-children [
+    center 0 0 0 
+    children [
 
-DEF klikopschuurdeur TouchSensor {}
-  DEF TimeSourceschuur TimeSensor { cycleInterval 20.0 } # Run once for 20 sec.
-  # Animeer het openzwaaien van de deur rond de Y as:
-  DEF schuurDeuropen OrientationInterpolator {
-       key      [ 0,      0.025,	0.05,	0.95,	0.975,       1.0 ]
-       keyValue [ 0 1 0 1.5707963, 0 1 0 2.4, 0 1 0 3.4, 0 1 0 3.4, 0 1 0 2.4, 0 1 0 1.5707963 ]
-  }
-
-Transform{
-    children[
-        Shape{
-            appearance 	USE deurkleur
-            geometry	USE deurInd
+        DEF klikopschuurdeur TouchSensor {}
+        DEF TimeSourceschuur TimeSensor { cycleInterval 20.0 } # Run once for 20 sec.
+        # Animeer het openzwaaien van de deur rond de Y as:
+        DEF schuurDeuropen OrientationInterpolator {
+           key      [ 0,      0.025,	0.05,	0.95,	0.975,       1.0 ]
+           keyValue [ 0 1 0 1.5707963, 0 1 0 2.4, 0 1 0 3.4, 0 1 0 3.4, 0 1 0 2.4, 0 1 0 1.5707963 ]
         }
+
+        Transform{
+            children[
+                Shape{
+                    appearance 	USE deurkleur
+                    geometry	USE deurInd
+                }
+            ]
+            scale 0.9139785	1	1   #maakt de deur op maat
+        }
+
+        USE ruitindeur
+
+        Transform {
+            children USE deurklink
+            translation 0.43 1 0
+        }
+
+
     ]
-    scale 0.9139785	1	1   #maakt de deur op maat
-}
-
-USE ruitindeur
-
-Transform {
-    children USE deurklink
-    translation 0.43 1 0
-}
-
-
-]
-translation 3.53	0.05	6.35
-rotation 0 1 0 1.5707963
+    translation 3.53	0.05	6.35
+    rotation 0 1 0 1.5707963
 }
 
 ROUTE klikopschuurdeur.touchTime TO TimeSourceschuur.startTime

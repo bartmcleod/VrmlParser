@@ -160,6 +160,51 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
   },
 
   /**
+   * Goes up the object tree recursively to find an object with an originalVrmlNode that is of a sensorType,
+   * for example a TouchSensor.
+   *
+   * @param Object3D the clicked shape.
+   * @param string sensorType
+   * @returns {boolean}|{string} name of the sensor or false.
+   */
+  findSensor: function (object, sensorType) {
+    if (null === object) {
+      console.log('Cannot find a sensor in null');
+      return false;
+    }
+
+    if ('undefined' === typeof object.parent || null === object.parent) {
+      console.log('We cannot go up the tree any further');
+      // we're out of parents, there's not a single sensorType to be found here.
+      return false;
+    }
+
+    for ( var b = 0; b < object.parent.children.length; b++ ) {
+      var checkNode = object.parent.children[b];
+      if ( 'undefined' !== typeof checkNode.userData.originalVrmlNode
+        && sensorType === checkNode.userData.originalVrmlNode.node ) {
+        // do a proof of concept here, but ideally, only trigger an already registered animation
+        /*
+         For a quick proof of concept, you can use slerp and the endpoint of a rotation interpolator
+         from the orignial animation. For that you need to combine the routes and get the names.
+         */
+        // find the first route, we only use TimeSensor to get from one to the next
+        var eventName = checkNode.name;
+        console.log(sensorType + ': ' + eventName);
+        return eventName;
+      }
+    }
+
+    console.log('No ' + sensorType + ' in parent');
+
+    console.log('Searching up the tree');
+    // not found in the parent object, look in its parent in turn (go up the object tree recursively)
+    return this.findSensor(object.parent, sensorType);
+  },
+
+
+
+  /**
    * Support clicking the scene.
    *
    * If an object is clicked, it will show up in here. If a handler was registered for it,
@@ -173,6 +218,8 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    * ROUTE Deuropen.value_changed TO deur.rotation
    *
    * @todo: translate event names to English, so that they make sense to people who are not able to read Dutch
+   * @todo: support more interactions
+   * @todo: make support for the OrientationInterpolator universal: use all the keys, take time into account and use any axis, not only y.
    *
    * The example is a three-step animation script:
    * 1. The touchTime of the touch sensor is routed to the time source. We can translate this step, since we have
@@ -187,168 +234,157 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
     var scope = this;
 
     this.renderer.domElement.addEventListener('mousedown', function (event) {
-      var camera = scope.camera;
-      var scene = scope.scene;
-      var renderer = scope.renderer;
+        var camera = scope.camera;
+        var scene = scope.scene;
+        var renderer = scope.renderer;
 
-      var x = event.offsetX == undefined ? event.layerX : event.offsetX;
-      var y = event.offsetY == undefined ? event.layerY : event.offsetY;
+        var x = event.offsetX == undefined ? event.layerX : event.offsetX;
+        var y = event.offsetY == undefined ? event.layerY : event.offsetY;
 
-      var vector = new THREE.Vector3();
-      vector.set(( x / renderer.domElement.width ) * 2 - 1, -( y / renderer.domElement.height ) * 2 + 1, 0.5);
+        var vector = new THREE.Vector3();
+        vector.set(( x / renderer.domElement.width ) * 2 - 1, -( y / renderer.domElement.height ) * 2 + 1, 0.5);
 
-      vector.unproject(camera);
+        vector.unproject(camera);
 
-      var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+        var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
-      var objects = scene.children;
-      var intersects = raycaster.intersectObjects(objects, true);
+        var objects = scene.children;
+        var intersects = raycaster.intersectObjects(objects, true);
 
-      if ( intersects.length ) {
-        var firstIntersect = intersects[0].object;
+        if ( intersects.length ) {
+          var firstIntersect = intersects[0].object;
 
-        if (
-          'undefined' !== typeof firstIntersect.userData
-          && 'undefined' !== typeof firstIntersect.userData.originalVrmlNode
-        ) {
-          //console.log(firstIntersect.userData.originalVrmlNode);
-          // check if a TouchSensor was registered with the parent
-          if ( 'undefined' !== typeof firstIntersect.parent ) {
-            for ( var b = 0; b < firstIntersect.parent.children.length; b++ ) {
-              var checkNode = firstIntersect.parent.children[b];
-              if ( 'undefined' !== typeof checkNode.userData.originalVrmlNode && 'TouchSensor' === checkNode.userData.originalVrmlNode.node ) {
-                // do a proof of concept here, but ideally, only trigger an already registered animation
-                // @todo: register animation for TouchSensor by the name of the TouchSensor
-                /*
-                 For a quick proof of concept, you can use slerp and the endpoint of a rotation interpolator
-                 from the orignial animation. For that you need to combine the routes and get the names.
-                 */
-                // find the first route, we only use TimeSensor to get from one to the next
-                var touch = checkNode.name;
-                console.log('touch: ' + touch);
+          var touch = scope.findSensor(firstIntersect, 'TouchSensor');
 
-                // work on a clone [slice(0)] of the routes, otherwise, using pop() will make the array useless for next time
-                var routes = scope.getRoutesForEvent(touch).slice(0);
+          if ( false === touch ) {
+            // no touch sensor found
+            return;
+          }
 
-                // naive, only use first
-                var targetRoutes = scope.findTargetRoutes(routes.pop());
+          // work on a clone [slice(0)] of the routes, otherwise, using pop() will make the array useless for next time
+          var routes = scope.getRoutesForEvent(touch).slice(0);
 
-                // again, naive (good usecase for map reduce?
-                var targetRoute = targetRoutes;
+          // naive, only use first
+          var targetRoutes = scope.findTargetRoutes(routes.pop());
 
-                while ( 'function' === typeof targetRoute.pop ) {
-                  targetRoute = targetRoute.pop();
+          // again, naive (good usecase for map reduce?
+          var targetRoute = targetRoutes;
 
-                  if ( 'undefined' === typeof targetRoute ) {
-                    console.log('no target route found for ' + touch);
-                    return;
-                  }
-                }
+          while ( 'function' === typeof targetRoute.pop ) {
+            targetRoute = targetRoute.pop();
 
-                // we found the leaf targetRoute
-                console.log('target: ' + targetRoute);
-
-                // again naive, assumptions:
-                /*
-                 *  1. source is an OrientationInterpolator
-                 *  2. target is the groupLevel parent, but axis and radians has to be taken from original target
-                 * */
-                var OrientationInterpolator = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
-                // find the start radians and max radians and use those to do a slerp. Then after a timeout, slerp back.
-                // NOTE: this ia naive interpretation of one specific sort of animation, to do an exact replication, we also need
-                // the timesensor and replicate every step using the keys of the orientationInterpolator.
-                var targetRadians = scope.findTargetRadians(OrientationInterpolator);
-                var startRadians = OrientationInterpolator.keyValue[0].radians;
-
-                var name = 'surrounding_' + targetRoute.target.name;
-                var groupLevelParent = scene.getObjectByName(name);
-
-                // POC
-
-                var radians = startRadians;
-                var startQuaternion = new THREE.Quaternion();
-                startQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRadians);
-
-                /** @var THREE.Object3D firstIntersect */
-                //groupLevelParent.quaternion.slerp(startQuaternion, 1);
-
-                var increment = 0.1;
-                var logCount = 0;
-
-                var targetQuaternion = new THREE.Quaternion();
-                targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRadians);
-
-                var negative = targetRadians < startRadians;
-
-                // figure out we want to inverse the animation (when it has played)
-                // because of small rounding differences, we will round ourselves
-                var groupQuaternionWCoordinate = Math.round(groupLevelParent.quaternion.w * 10000);
-                var targetQuaternionWCoordinate = Math.round(targetQuaternion.w * 10000);
-                var inverted = false;
-
-                if ( groupQuaternionWCoordinate <= targetQuaternionWCoordinate ) {
-                  console.log('can be reverted, has already played');
-                  // we invert it here, by setting the radians to the start radians
-                  targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), startRadians);
-                  inverted = true;
-                }
-
-                /**
-                 * The animation callback
-                 *
-                 * @param delta
-                 */
-                var callback = function (delta) {
-
-                  groupLevelParent.quaternion.slerp(targetQuaternion, increment).normalize();
-
-                  // because of small rounding differences, we will round ourselves
-                  groupQuaternionWCoordinate = Math.round(groupLevelParent.quaternion.w * 10000);
-                  targetQuaternionWCoordinate = Math.round(targetQuaternion.w * 10000);
-
-                  if (
-                    (false === inverted && groupQuaternionWCoordinate <= targetQuaternionWCoordinate)
-                    ||
-                    (true === inverted && groupQuaternionWCoordinate >= targetQuaternionWCoordinate)
-                  ) {
-                    console.log('target quaternion reached, remove animation');
-                    scope.removeAnimation(touch);
-                  }
-
-                  if ( logCount % 1500 === 0 ) {
-                    console.log('w group ' + groupLevelParent.quaternion.w);
-                    console.log('w target ' + targetQuaternion.w);
-                    console.log('targetRadians: ' + targetRadians);
-                    console.log('startRadians: ' + startRadians);
-                  }
-                };
-
-                scope.addAnimation(touch, callback);
-              }
+            if ( 'undefined' === typeof targetRoute ) {
+              console.log('no target route found for ' + touch);
+              return;
             }
           }
+
+          // we found the leaf targetRoute
+          console.log('target: ' + targetRoute);
+
+          // again naive, assumptions:
+          /*
+           *  1. source is an OrientationInterpolator
+           *  2. target is the groupLevel parent, but axis and radians has to be taken from original target
+           * */
+          var OrientationInterpolator = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
+          // find the start radians and max radians and use those to do a slerp. Then after a timeout, slerp back.
+          // NOTE: this ia naive interpretation of one specific sort of animation, to do an exact replication, we also need
+          // the timesensor and replicate every step using the keys of the orientationInterpolator.
+          var targetRadians = scope.findTargetRadians(OrientationInterpolator);
+          var startRadians = OrientationInterpolator.keyValue[0].radians;
+
+          var name = 'surrounding_' + targetRoute.target.name;
+          var groupLevelParent = scene.getObjectByName(name);
+
+          // POC
+
+          var radians = startRadians;
+          var startQuaternion = new THREE.Quaternion();
+          startQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRadians);
+
+          /** @var THREE.Object3D firstIntersect */
+
+          var increment = 0.1;
+          var logCount = 0;
+
+          var targetQuaternion = new THREE.Quaternion();
+          targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRadians);
+
+          var negative = targetRadians < startRadians;
+
+          // figure out we want to inverse the animation (when it has played)
+          // because of small rounding differences, we will round ourselves
+          /* @todo: inversion will become obsolete, once we use all the keys and the time,
+           because some doors close themselves after a while and others just stay open
+           */
+          var groupQuaternionWCoordinate = Math.round(groupLevelParent.quaternion.w * 10000);
+          var targetQuaternionWCoordinate = Math.round(targetQuaternion.w * 10000);
+          var inverted = false;
+
+          if ( groupQuaternionWCoordinate <= targetQuaternionWCoordinate ) {
+            console.log('can be reverted, has already played');
+            // we invert it here, by setting the radians to the start radians
+            targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), startRadians);
+            inverted = true;
+          }
+
+          /**
+           * The animation callback
+           *
+           * @param delta
+           */
+          var callback = function (delta) {
+
+            groupLevelParent.quaternion.slerp(targetQuaternion, increment).normalize();
+
+            // because of small rounding differences, we will round ourselves
+            groupQuaternionWCoordinate = Math.round(groupLevelParent.quaternion.w * 10000);
+            targetQuaternionWCoordinate = Math.round(targetQuaternion.w * 10000);
+
+            if (
+              (false === inverted && groupQuaternionWCoordinate <= targetQuaternionWCoordinate)
+              ||
+              (true === inverted && groupQuaternionWCoordinate >= targetQuaternionWCoordinate)
+            ) {
+              console.log('target quaternion reached, remove animation');
+              scope.removeAnimation(touch);
+            }
+
+            // if ( logCount % 1500 === 0 ) {
+            //   console.log('w group ' + groupLevelParent.quaternion.w);
+            //   console.log('w target ' + targetQuaternion.w);
+            //   console.log('targetRadians: ' + targetRadians);
+            //   console.log('startRadians: ' + startRadians);
+            // }
+          };
+
+          scope.addAnimation(touch, callback);
+
         }
-      }
 
-      if ( true === scope.debug ) {
-        // draw a line where the object was clicked
-        if ( null !== line ) {
-          scene.remove(line);
+        if ( true === scope.debug ) {
+          // draw a line where the object was clicked
+          if ( null !== line ) {
+            scene.remove(line);
+          }
+
+          var lineMaterial = new THREE.LineBasicMaterial({
+            color: 0x0000ff
+          });
+          var geometry = new THREE.Geometry();
+
+          geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x, raycaster.ray.origin.y, raycaster.ray.origin.z));
+          geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x + (raycaster.ray.direction.x * 100000), raycaster.ray.origin.y + (raycaster.ray.direction.y * 100000), raycaster.ray.origin.z + (raycaster.ray.direction.z * 100000)));
+          line = new THREE.Line(geometry, lineMaterial);
+          scene.add(line);
+          // / draw a line
         }
 
-        var lineMaterial = new THREE.LineBasicMaterial({
-          color: 0x0000ff
-        });
-        var geometry = new THREE.Geometry();
-
-        geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x, raycaster.ray.origin.y, raycaster.ray.origin.z));
-        geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x + (raycaster.ray.direction.x * 100000), raycaster.ray.origin.y + (raycaster.ray.direction.y * 100000), raycaster.ray.origin.z + (raycaster.ray.direction.z * 100000)));
-        line = new THREE.Line(geometry, lineMaterial);
-        scene.add(line);
-        // / draw a line
       }
-
-    }, false);
+      ,
+      false
+    );
     // / clicking
 
   }
