@@ -4,43 +4,34 @@
  *
  * Adds animation and interaction support to the VrmlParser.Renderer.ThreeJs
  */
-if ( 'undefined' === typeof VrmlParser ) {
-  VrmlParser = {};
-}
+var VrmlParser = VrmlParser || {};
 
-if ( 'undefined' === typeof VrmlParser.Renderer ) {
-  VrmlParser.Renderer = {};
-}
+VrmlParser.Renderer = VrmlParser.Renderer || {};
 
-if ( 'undefined' === typeof VrmlParser.Renderer.ThreeJs ) {
-  VrmlParser.Renderer.ThreeJs = function () {
-  };
-}
+VrmlParser.Renderer.ThreeJs = VrmlParser.Renderer.ThreeJs || {};
 
-if ( 'undefined' === typeof VrmlParser.Renderer.ThreeJs.Animation ) {
-  /**
-   * Offers support for interaction and animation.
-   *
-   * Currently support clicking an object and seeing a log message for that.
-   *
-   * Also, in debug mode, a blue line will be drawn from the perspective camera to the clicked point.
-   * You can see this line when zooming out after clicking and object.
-   *
-   * @param scene
-   * @param camera
-   * @param renderer
-   * @param debug
-   * @constructor
-   */
-  VrmlParser.Renderer.ThreeJs.Animation = function (scene, camera, renderer, debug) {
-    // @todo: support for multiple cameras or just re-initialize with a new camera when switched to one?
-    this.camera = camera;
-    this.scene = scene;
-    this.renderer = renderer;
-    this.debug = debug ? true : false;
-    this.animations = {};
-  };
-}
+/**
+ * Offers support for interaction and animation.
+ *
+ * Currently support clicking an object and seeing a log message for that.
+ *
+ * Also, in debug mode, a blue line will be drawn from the perspective camera to the clicked point.
+ * You can see this line when zooming out after clicking and object.
+ *
+ * @param scene
+ * @param camera
+ * @param renderer
+ * @param debug
+ * @constructor
+ */
+VrmlParser.Renderer.ThreeJs.Animation = function (scene, camera, renderer, debug) {
+  // @todo: support for multiple cameras or just re-initialize with a new camera when switched to one?
+  this.camera = camera;
+  this.scene = scene;
+  this.renderer = renderer;
+  this.debug = debug ? true : false;
+  this.animations = {};
+};
 
 VrmlParser.Renderer.ThreeJs.Animation.prototype = {
   /**
@@ -202,7 +193,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
     return this.findSensor(object.parent, sensorType);
   },
 
-
+  // @todo: support more interactions than just clicking
 
   /**
    * Support clicking the scene.
@@ -218,7 +209,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    * ROUTE Deuropen.value_changed TO deur.rotation
    *
    * @todo: translate event names to English, so that they make sense to people who are not able to read Dutch
-   * @todo: support more interactions
+   * @todo: support for other interpolators, by putting the support in its own class
    * @todo: make support for the OrientationInterpolator universal: use all the keys, take time into account and use any axis, not only y.
    *
    * The example is a three-step animation script:
@@ -285,7 +276,6 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
           // again naive, assumptions:
           /*
            *  1. source is an OrientationInterpolator
-           *  2. target is the groupLevel parent, but axis and radians has to be taken from original target
            * */
           var OrientationInterpolator = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
           // find the start radians and max radians and use those to do a slerp. Then after a timeout, slerp back.

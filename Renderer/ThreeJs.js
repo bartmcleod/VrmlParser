@@ -1,17 +1,13 @@
 /**
- * Not written as a NodeJs module yet, because this would require to use browserify
+ * Not written as a NodeJs module, because this would require to use browserify
  * to make it available in the browser, while it is onlly useful in the browser anyway.
  *
  * @copyright Bart McLeod 2016, mcleod@spaceweb.nl
  * @author Bart McLeod / http://spaceweb.nl/
  */
-if ( 'undefined' === typeof VrmlParser ) {
-  VrmlParser = {};
-}
+var VrmlParser = VrmlParser || {};
 
-if ( 'undefined' === typeof VrmlParser.Renderer ) {
-  VrmlParser.Renderer = {};
-}
+VrmlParser.Renderer = VrmlParser.Renderer || {};
 
 VrmlParser.Renderer.ThreeJs = function (debug) {
   this.debug = debug ? true : false;
