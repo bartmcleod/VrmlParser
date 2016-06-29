@@ -127,30 +127,6 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
   },
 
   /**
-   * Temporary utility to find the largest amount of rotation specified in an OrientationInterpolator.
-   *
-   * @param orientationInterpolator
-   */
-  findTargetRadians: function (orientationInterpolator) {
-    var targetRadians;
-    var startRadians = orientationInterpolator.keyValue[0].radians;
-    var lastDiff = 0;
-
-    for ( var i = 0; i < orientationInterpolator.keyValue.length; i++ ) {
-      var radians = orientationInterpolator.keyValue[i].radians;
-      var diff = Math.abs(radians - startRadians);
-      if ( diff > lastDiff ) {
-        targetRadians = radians;
-        lastDiff = diff;
-      }
-    }
-
-    console.log('targetRadians:' + targetRadians);
-
-    return targetRadians;
-  },
-
-  /**
    * Goes up the object tree recursively to find an object with an originalVrmlNode that is of a sensorType,
    * for example a TouchSensor.
    *
@@ -209,9 +185,6 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    * ROUTE Deuropen.value_changed TO deur.rotation
    *
    * @todo: translate event names to English, so that they make sense to people who are not able to read Dutch
-   * @todo: support for other interpolators, by putting the support in its own class
-   * @todo: make support for the OrientationInterpolator universal: use all the keys, take time into account and use any axis, not only y.
-   *
    * The example is a three-step animation script:
    * 1. The touchTime of the touch sensor is routed to the time source. We can translate this step, since we have
    * a clock and a click event
@@ -273,84 +246,26 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
           // we found the leaf targetRoute
           console.log('target: ' + targetRoute);
 
-          // again naive, assumptions:
-          /*
-           *  1. source is an OrientationInterpolator
-           * */
-          var OrientationInterpolator = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
-          // find the start radians and max radians and use those to do a slerp. Then after a timeout, slerp back.
-          // NOTE: this ia naive interpretation of one specific sort of animation, to do an exact replication, we also need
-          // the timesensor and replicate every step using the keys of the orientationInterpolator.
-          var targetRadians = scope.findTargetRadians(OrientationInterpolator);
-          var startRadians = OrientationInterpolator.keyValue[0].radians;
+          var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
 
-          var name = 'surrounding_' + targetRoute.target.name;
-          var groupLevelParent = scene.getObjectByName(name);
-
-          // POC
-
-          var radians = startRadians;
-          var startQuaternion = new THREE.Quaternion();
-          startQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRadians);
-
-          /** @var THREE.Object3D firstIntersect */
-
-          var increment = 0.1;
-          var logCount = 0;
-
-          var targetQuaternion = new THREE.Quaternion();
-          targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRadians);
-
-          var negative = targetRadians < startRadians;
-
-          // figure out we want to inverse the animation (when it has played)
-          // because of small rounding differences, we will round ourselves
-          /* @todo: inversion will become obsolete, once we use all the keys and the time,
-           because some doors close themselves after a while and others just stay open
-           */
-          var groupQuaternionWCoordinate = Math.round(groupLevelParent.quaternion.w * 10000);
-          var targetQuaternionWCoordinate = Math.round(targetQuaternion.w * 10000);
-          var inverted = false;
-
-          if ( groupQuaternionWCoordinate <= targetQuaternionWCoordinate ) {
-            console.log('can be reverted, has already played');
-            // we invert it here, by setting the radians to the start radians
-            targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), startRadians);
-            inverted = true;
+          // any supported interpolator will work, for now, only OrientationInterpolator
+          if ('undefined' === typeof VrmlParser.Renderer.ThreeJs.Animation[originalNode.node]) {
+            console.log(originalNode.node + ' is not yet supported');
+            return;
           }
 
-          /**
-           * The animation callback
-           *
-           * @param delta
-           */
-          var callback = function (delta) {
+          var interpolator = new VrmlParser.Renderer.ThreeJs.Animation[originalNode.node](originalNode);
 
-            groupLevelParent.quaternion.slerp(targetQuaternion, increment).normalize();
+          var name = 'surrounding_' + targetRoute.target.name;
+          var target = scene.getObjectByName(name);
 
-            // because of small rounding differences, we will round ourselves
-            groupQuaternionWCoordinate = Math.round(groupLevelParent.quaternion.w * 10000);
-            targetQuaternionWCoordinate = Math.round(targetQuaternion.w * 10000);
-
-            if (
-              (false === inverted && groupQuaternionWCoordinate <= targetQuaternionWCoordinate)
-              ||
-              (true === inverted && groupQuaternionWCoordinate >= targetQuaternionWCoordinate)
-            ) {
-              console.log('target quaternion reached, remove animation');
-              scope.removeAnimation(touch);
-            }
-
-            // if ( logCount % 1500 === 0 ) {
-            //   console.log('w group ' + groupLevelParent.quaternion.w);
-            //   console.log('w target ' + targetQuaternion.w);
-            //   console.log('targetRadians: ' + targetRadians);
-            //   console.log('startRadians: ' + startRadians);
-            // }
+          // cleanup method for when the callback wants to be removed because it's done.
+          var finish = function(){
+            scope.removeAnimation(touch);
           };
 
+          var callback = interpolator.getCallback(target, finish);
           scope.addAnimation(touch, callback);
-
         }
 
         if ( true === scope.debug ) {
