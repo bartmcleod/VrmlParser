@@ -2,6 +2,8 @@
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since May 25, 2016
  *
+ * @todo: Understand http://threejs.org/docs/#Reference/Extras.Animation/AnimationHandler, this code might duplicate for example removing an animation from the update loop
+ *
  * Adds animation and interaction support to the VrmlParser.Renderer.ThreeJs
  */
 var VrmlParser = VrmlParser || {};
@@ -79,10 +81,10 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
   getRoutesForEvent: function (name) {
     var routesRegistry = this.scene.userData.routes;
     var routes = routesRegistry[name];
-    //console.log('The routes are:');
+    //this.log('The routes are:');
 
     for ( var r = 0; r < routes.length; r++ ) {
-      //console.log(routes[r]);
+      //this.log(routes[r]);
     }
     return routes;
   },
@@ -127,6 +129,16 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
   },
 
   /**
+   * Utility to easily switch logging on and off with the debug flag.
+   * @param obj
+   */
+  log: function(obj){
+    if (this.dedug) {
+      console.log(obj);
+    }
+  },
+
+  /**
    * Goes up the object tree recursively to find an object with an originalVrmlNode that is of a sensorType,
    * for example a TouchSensor.
    *
@@ -136,12 +148,12 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    */
   findSensor: function (object, sensorType) {
     if (null === object) {
-      console.log('Cannot find a sensor in null');
+      this.log('Cannot find a sensor in null');
       return false;
     }
 
     if ('undefined' === typeof object.parent || null === object.parent) {
-      console.log('We cannot go up the tree any further');
+      this.log('We cannot go up the tree any further');
       // we're out of parents, there's not a single sensorType to be found here.
       return false;
     }
@@ -157,14 +169,16 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
          */
         // find the first route, we only use TimeSensor to get from one to the next
         var eventName = checkNode.name;
-        console.log(sensorType + ': ' + eventName);
+        if (this.debug) {
+          this.log(sensorType + ': ' + eventName);
+        }
         return eventName;
       }
     }
 
-    console.log('No ' + sensorType + ' in parent');
+    this.log('No ' + sensorType + ' in parent');
 
-    console.log('Searching up the tree');
+    this.log('Searching up the tree');
     // not found in the parent object, look in its parent in turn (go up the object tree recursively)
     return this.findSensor(object.parent, sensorType);
   },
@@ -238,19 +252,19 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
             targetRoute = targetRoute.pop();
 
             if ( 'undefined' === typeof targetRoute ) {
-              console.log('no target route found for ' + touch);
+              scope.log('no target route found for ' + touch);
               return;
             }
           }
 
           // we found the leaf targetRoute
-          console.log('target: ' + targetRoute);
+          scope.log('target: ' + targetRoute);
 
           var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
 
           // any supported interpolator will work, for now, only OrientationInterpolator
           if ('undefined' === typeof VrmlParser.Renderer.ThreeJs.Animation[originalNode.node]) {
-            console.log(originalNode.node + ' is not yet supported');
+            scope.log(originalNode.node + ' is not yet supported');
             return;
           }
 

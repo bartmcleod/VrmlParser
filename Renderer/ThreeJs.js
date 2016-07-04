@@ -221,6 +221,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
       switch ( node.node ) {
         case 'OrientationInterpolator':
+        case 'PositionInterpolator':
           // only keeping the object, because we are interested in its original values
           break;
         case 'Group':

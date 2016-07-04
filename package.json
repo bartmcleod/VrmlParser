@@ -1,11 +1,11 @@
 {
-  "name": "VrmlParser",
+  "name": "vrmlparser",
   "version": "0.1.0",
   "description": "A package that aims to help you to re-use your VRML models as 3D scenes in the browser, with the use of modern JavaScript libraries such as three.js",
   "author": "Bart McLeod <mcleod@spaceweb.nl>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bartmcleod/VrmlParser"
+    "url": "git+https://github.com/bartmcleod/VrmlParser.git"
   },
   "bugs": {
     "url": "https://github.com/bartmcleod/VrmlParser/issues"
@@ -21,5 +21,11 @@
     "pegjs-require": "*",
     "fs": "*"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/bartmcleod/VrmlParser#readme",
+  "main": "vrml.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node vrml-parser.js"
+  }
 }
