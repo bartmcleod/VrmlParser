@@ -52,6 +52,7 @@
 <script src="node_modules/three/examples/js/controls/OrbitControls.js"></script>
 <script src="node_modules/three/examples/js/controls/FirstPersonControls.js"></script>
 <script src="node_modules/three/examples/js/controls/TrackballControls.js"></script>
+<script src="node_modules/tween.js/src/Tween.js"></script>
 
 <script type="x-shader/x-vertex" id="vertexShader">
 
@@ -109,7 +110,10 @@
     function init() {
 
         camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1e10);
-        camera.position.z = 6;
+        camera.position.z = 4;
+        camera.position.y = 3;
+        camera.position.x = 0;
+       // camera.lookAt(0, 3, 0);
 
         scene = new THREE.Scene();
 

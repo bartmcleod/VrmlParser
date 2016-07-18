@@ -19,6 +19,7 @@
   "dependencies": {
     "three": "*",
     "pegjs-require": "*",
+    "tween.js": "*",
     "fs": "*"
   },
   "license": "MIT",

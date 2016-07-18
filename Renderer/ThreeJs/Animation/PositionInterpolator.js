@@ -20,12 +20,24 @@ VrmlParser.Renderer.ThreeJs.Animation = VrmlParser.Renderer.ThreeJs.Animation ||
  * @param originalNode
  * @constructor
  */
-VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator = function (originalNode) {
+VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator = function (originalNode, debug) {
   this.key = originalNode.key;
   this.keyValue = originalNode.keyValue;
+  this.debug = debug ? true : false;
 }
 
 VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
+
+  /**
+   * Utility to easily switch logging on and off with the debug flag.
+   * @param obj
+   */
+  log: function (obj) {
+    if ( this.debug ) {
+      console.log(obj);
+    }
+  },
+
   /**
    * Gets the animation callback method, which can play the animation associated with this OrientationInterpolator.
    * @param Object3D target
@@ -33,13 +45,36 @@ VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
    */
   getCallback: function (target, finish) {
     var scope = this;
-    var index = 0;
-    var x;
-    var positive;
-    var p;
+    var index = 1;
 
-    p = this.getPosition(0);
-    positive = p.x >= target.position.x;
+    var p = this.getPosition(index);
+    this.log(p);
+    this.log(target);
+    //this.log(clock.getDelta());
+
+    var position = { x: target.position.x };
+    var tween = new TWEEN.Tween(position)
+      .to(p, 3000)
+      .onUpdate(function(){
+        scope.log(p);
+        target.position.x = position.x;
+        // scope.log(position);
+        // target.translateX(position.x);
+      })
+      .onComplete(function(){
+        finish();
+      })
+      .start(+new Date())
+      ;
+
+    // tween.onComplete(function () {
+    //   // take next key or finish
+    //   index++;
+    //
+    //   p = scope.getPosition(index);
+    //   scope.log(position);
+    //   tween = new TWEEN.Tween(position).to(p).start();
+    // });
 
     /**
      * The animation callback
@@ -48,33 +83,7 @@ VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
      * @param callable finish will be called by the callback when it is ready to be removed
      */
     var callback = function (delta) {
-
-      p = scope.getPosition(index);
-
-      var increment = delta * 1000;
-      increment = positive ? increment : -increment;
-
-      x = target.position.x + increment;
-      var arrivedAtKeyValue = (positive && x >= p.x) || (! positive && x < p.x);
-
-
-      if ( arrivedAtKeyValue ) {
-        // make positiion exact
-        target.position.set(p.x, p.y, p.z);
-
-        // take next key or finish
-        index++;
-
-        if ( index === scope.keyValue.length ) {
-          console.log('finish');
-          return finish();
-        }
-
-        positive = scope.getPosition(index).x >= target.position.x;
-      }
-
-      target.position.set(x, p.y, p.z);
-
+      tween.update(+new Date());
     };
 
     return callback;

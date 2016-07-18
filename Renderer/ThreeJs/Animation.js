@@ -132,8 +132,8 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    * Utility to easily switch logging on and off with the debug flag.
    * @param obj
    */
-  log: function(obj){
-    if (this.dedug) {
+  log: function (obj) {
+    if ( this.debug ) {
       console.log(obj);
     }
   },
@@ -147,12 +147,12 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    * @returns {boolean}|{string} name of the sensor or false.
    */
   findSensor: function (object, sensorType) {
-    if (null === object) {
+    if ( null === object ) {
       this.log('Cannot find a sensor in null');
       return false;
     }
 
-    if ('undefined' === typeof object.parent || null === object.parent) {
+    if ( 'undefined' === typeof object.parent || null === object.parent ) {
       this.log('We cannot go up the tree any further');
       // we're out of parents, there's not a single sensorType to be found here.
       return false;
@@ -169,9 +169,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
          */
         // find the first route, we only use TimeSensor to get from one to the next
         var eventName = checkNode.name;
-        if (this.debug) {
-          this.log(sensorType + ': ' + eventName);
-        }
+        this.log(sensorType + ': ' + eventName);
         return eventName;
       }
     }
@@ -263,18 +261,18 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
           var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
 
           // any supported interpolator will work, for now, only OrientationInterpolator
-          if ('undefined' === typeof VrmlParser.Renderer.ThreeJs.Animation[originalNode.node]) {
+          if ( 'undefined' === typeof VrmlParser.Renderer.ThreeJs.Animation[originalNode.node] ) {
             scope.log(originalNode.node + ' is not yet supported');
             return;
           }
 
-          var interpolator = new VrmlParser.Renderer.ThreeJs.Animation[originalNode.node](originalNode);
+          var interpolator = new VrmlParser.Renderer.ThreeJs.Animation[originalNode.node](originalNode, scope.debug);
 
           var name = 'surrounding_' + targetRoute.target.name;
           var target = scene.getObjectByName(name);
 
           // cleanup method for when the callback wants to be removed because it's done.
-          var finish = function(){
+          var finish = function () {
             scope.removeAnimation(touch);
           };
 
