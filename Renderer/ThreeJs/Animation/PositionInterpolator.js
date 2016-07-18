@@ -38,6 +38,22 @@ VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
     }
   },
 
+  tween: function (target, endPosition) {
+    var position = {x: target.position.x};
+    var tween = new TWEEN.Tween(position)
+        .to(endPosition, 3000)
+        .onUpdate(function () {
+          //scope.log(p);
+          target.position.x = position.x;
+        })
+        // .onComplete(function () {
+        //   finish();
+        // })
+        .start(+new Date())
+      ;
+    return tween;
+  },
+
   /**
    * Gets the animation callback method, which can play the animation associated with this OrientationInterpolator.
    * @param Object3D target
@@ -45,36 +61,30 @@ VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
    */
   getCallback: function (target, finish) {
     var scope = this;
+    // assumption that the first position is the position the target is already at, so we start with the next
     var index = 1;
 
     var p = this.getPosition(index);
     this.log(p);
     this.log(target);
-    //this.log(clock.getDelta());
 
-    var position = { x: target.position.x };
-    var tween = new TWEEN.Tween(position)
-      .to(p, 3000)
-      .onUpdate(function(){
-        scope.log(p);
-        target.position.x = position.x;
-        // scope.log(position);
-        // target.translateX(position.x);
-      })
-      .onComplete(function(){
+    var tween = this.tween(target, p);
+
+    tween.onComplete(function () {
+      // take next key or finish
+      index++;
+
+      if (index >= scope.keyValue.length) {
+        console.log('finish');
         finish();
-      })
-      .start(+new Date())
-      ;
+        return;
+      }
 
-    // tween.onComplete(function () {
-    //   // take next key or finish
-    //   index++;
-    //
-    //   p = scope.getPosition(index);
-    //   scope.log(position);
-    //   tween = new TWEEN.Tween(position).to(p).start();
-    // });
+      p = scope.getPosition(index);
+      scope.log(p);
+      tween = scope.tween(target, p);
+      tween.onComplete = this; // @todo: untested, does not seem to work
+    });
 
     /**
      * The animation callback
