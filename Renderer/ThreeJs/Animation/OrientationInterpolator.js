@@ -20,7 +20,7 @@ VrmlParser.Renderer.ThreeJs.Animation = VrmlParser.Renderer.ThreeJs.Animation ||
  * @param originalNode
  * @constructor
  */
-VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator = function(originalNode){
+VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator = function (originalNode) {
   this.key = originalNode.key;
   this.keyValue = originalNode.keyValue;
 }
@@ -31,37 +31,18 @@ VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator.prototype = {
    * @param Object3D target
    * @param callable finish A method that will be called when the callback is ready to be removed
    */
-  getCallback: function(target, finish){
-    var endRadians = this.findendRadians();
-    var startRadians = this.keyValue[0].radians;
-
-    // POC
-    var startQuaternion = new THREE.Quaternion();
-    startQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), endRadians);
+  getCallback: function (target, finish) {
+    var scope = this;
+    // assumption that the object is already at keyValue[0], so start rotating toward keyValue[1]
+    var index = 1;
+    var endRadians = this.keyValue[index].radians;
 
     /** @var THREE.Object3D firstIntersect */
 
     var increment = 0.05;
-    var logCount = 0;
 
     var endQuaternion = new THREE.Quaternion();
     endQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), endRadians);
-
-    // figure out if we want to inverse the animation (when it has played)
-    // because of small rounding differences, we will round ourselves
-    /* @todo: inversion will become obsolete, once we use all the keys and the time,
-     because some doors close themselves after a while and others just stay open
-     */
-    var targetQuaternionWCoordinate = Math.round(target.quaternion.w * 10000);
-    var endQuaternionWCoordinate = Math.round(endQuaternion.w * 10000);
-    var inverted = false;
-
-    if ( targetQuaternionWCoordinate <= endQuaternionWCoordinate ) {
-      console.log('can be reverted, has already played');
-      // we invert it here, by setting the radians to the start radians
-      endQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), startRadians);
-      inverted = true;
-    }
 
     /**
      * The animation callback
@@ -70,29 +51,35 @@ VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator.prototype = {
      * @param callable finish will be called by the callback when it is ready to be removed
      */
     var callback = function (delta) {
+      /*
+      Allthough slerp is perfect for the original intent of the animations in the house.wrl, which would only open
+      doors by rotating them, slerp is not good for any animation.
 
+      First of all, slerp would actually replace all of the interpolation keys with a single smooth, beautiful animation.
+      In spite of its smoothness, this only supports case where the keys were used, only to achieve that particular effect: one
+      smooth rotation.
+       */
       target.quaternion.slerp(endQuaternion, increment).normalize();
 
       // because of small rounding differences, we will round ourselves
-      targetQuaternionWCoordinate = Math.round(target.quaternion.w * 10000);
-      endQuaternionWCoordinate = Math.round(endQuaternion.w * 10000);
+      var targetQuaternionWCoordinate = Math.round(target.quaternion.w * 10000);
+      var endQuaternionWCoordinate = Math.round(endQuaternion.w * 10000);
 
-      if (
-        (false === inverted && targetQuaternionWCoordinate <= endQuaternionWCoordinate)
-        ||
-        (true === inverted && targetQuaternionWCoordinate >= endQuaternionWCoordinate)
-      ) {
-        console.log('target quaternion reached, remove animation');
-        // scope.removeAnimation(touch);
-        finish();
+      if ( targetQuaternionWCoordinate <= endQuaternionWCoordinate ) {
+        // next key
+        index++;
+
+        if (index >= scope.keyValue.length) {
+          console.log('Last target quaternion reached, remove animation');
+          finish();
+          return;
+        }
+
+        // next key @todo: should we also consider the timing from the original animation?, now we rely on delta without any awareness of the original speed
+        endRadians = scope.keyValue[index].radians;
+        endQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), endRadians);
       }
 
-      // if ( logCount % 1500 === 0 ) {
-      //   console.log('w group ' + groupLevelParent.quaternion.w);
-      //   console.log('w target ' + endQuaternion.w);
-      //   console.log('endRadians: ' + endRadians);
-      //   console.log('startRadians: ' + startRadians);
-      // }
     };
 
     return callback;
