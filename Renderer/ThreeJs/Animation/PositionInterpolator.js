@@ -39,19 +39,11 @@ VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
   },
 
   tween: function (target, endPosition) {
-    var position = {x: target.position.x};
-    var tween = new TWEEN.Tween(position)
-        .to(endPosition, 3000)
-        .onUpdate(function () {
-          //scope.log(p);
-          target.position.x = position.x;
-        })
-        // .onComplete(function () {
-        //   finish();
-        // })
-        .start(+new Date())
+    return new TWEEN
+      .Tween(target.position)
+      .to(endPosition)
+      .start(+new Date())
       ;
-    return tween;
   },
 
   /**
@@ -61,10 +53,12 @@ VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
    */
   getCallback: function (target, finish) {
     var scope = this;
+
     // assumption that the first position is the position the target is already at, so we start with the next
     var index = 1;
 
     var p = this.getPosition(index);
+
     this.log(p);
     this.log(target);
 
