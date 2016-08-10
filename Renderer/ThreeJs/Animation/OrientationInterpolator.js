@@ -35,14 +35,13 @@ VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator.prototype = {
     var scope = this;
     // assumption that the object is already at keyValue[0], so start rotating toward keyValue[1]
     var index = 1;
-    var endRadians = this.keyValue[index].radians;
+    var endRadians;
 
     /** @var THREE.Object3D firstIntersect */
 
     var increment = 0.05;
 
-    var endQuaternion = new THREE.Quaternion();
-    endQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), endRadians);
+    var endQuaternion;
 
     /**
      * The animation callback
@@ -51,6 +50,12 @@ VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator.prototype = {
      * @param callable finish will be called by the callback when it is ready to be removed
      */
     var callback = function (delta) {
+
+      // next key @todo: should we also consider the timing from the original animation?, now we rely on delta without any awareness of the original speed
+
+      endRadians = scope.keyValue[index].radians;
+      endQuaternion = new THREE.Quaternion();
+      endQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), endRadians);
       /*
       Allthough slerp is perfect for the original intent of the animations in the house.wrl, which would only open
       doors by rotating them, slerp is not good for any animation.
@@ -62,10 +67,10 @@ VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator.prototype = {
       target.quaternion.slerp(endQuaternion, increment).normalize();
 
       // because of small rounding differences, we will round ourselves
-      var targetQuaternionWCoordinate = Math.round(target.quaternion.w * 10000);
-      var endQuaternionWCoordinate = Math.round(endQuaternion.w * 10000);
+      var targetQuaternionWCoordinate = Math.round(target.quaternion.w * 10E5);
+      var endQuaternionWCoordinate = Math.round(endQuaternion.w * 10E5);
 
-      if ( targetQuaternionWCoordinate <= endQuaternionWCoordinate ) {
+      if ( targetQuaternionWCoordinate == endQuaternionWCoordinate ) {
         // next key
         index++;
 
@@ -75,37 +80,11 @@ VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator.prototype = {
           return;
         }
 
-        // next key @todo: should we also consider the timing from the original animation?, now we rely on delta without any awareness of the original speed
-        endRadians = scope.keyValue[index].radians;
-        endQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), endRadians);
       }
 
     };
 
     return callback;
-  },
-
-  /**
-   * Temporary utility to find the largest amount of rotation specified in an OrientationInterpolator.
-   *
-   * @param orientationInterpolator
-   */
-  findendRadians: function () {
-    var endRadians;
-    var startRadians = this.keyValue[0].radians;
-    var lastDiff = 0;
-
-    for ( var i = 0; i < this.keyValue.length; i++ ) {
-      var radians = this.keyValue[i].radians;
-      var diff = Math.abs(radians - startRadians);
-      if ( diff > lastDiff ) {
-        endRadians = radians;
-        lastDiff = diff;
-      }
-    }
-
-    console.log('endRadians:' + endRadians);
-
-    return endRadians;
   }
+
 };
