@@ -256,7 +256,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
           }
 
           // we found the leaf targetRoute
-          scope.log('target: ' + targetRoute);
+          scope.log(targetRoute);
 
           var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
 
