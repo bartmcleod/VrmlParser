@@ -255,17 +255,17 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           if ( node.has('translation') ) {
 
             t = node.translation;
-
             object.position.set(t.x, t.y, t.z);
 
           }
 
+          var r = {x: 0, y: 0, z: 0, radians: 0};
+
           if ( node.has('rotation') ) {
 
-            var r = node.rotation;
-
-            object.quaternion.setFromAxisAngle(new THREE.Vector3(r.x, r.y, r.z), r.radians);
-
+            r = node.rotation;
+            // we no longer set it here, but in the surrounding group, otherwise rotation will no be relative when animated
+            //object.quaternion.setFromAxisAngle(new THREE.Vector3(r.x, r.y, r.z), r.radians);
           }
 
           if ( node.has('scale') ) {
@@ -290,8 +290,10 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           // by creating a group around the group, setting its position to the center
           // and then translate the innerGroup back to its original position
           surroundingGroup.position.set(t.x + center.x, t.y + center.y, t.z + center.z);
-          //surroundingGroup.position.set(10,0,-2);
           object.position.set(0 - center.x, 0 - center.y, 0 - center.z);
+
+          // we me must also rotate the surrounding group to any rotation that applies to the original object
+          surroundingGroup.quaternion.setFromAxisAngle(new THREE.Vector3(r.x, r.y, r.z), r.radians);
 
           surroundingGroup.add(object);
           break;

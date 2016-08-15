@@ -61,8 +61,9 @@ VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator.prototype = {
 
   tween: function () {
     var scope = this;
-    this.log('tweening for ' + this.index);
+    //this.log('tweening for ' + this.index);
     var endRadians = this.keyValue[this.index].radians;
+    this.log('Animating from '+ this.target.rotation.y +' to ' + endRadians);
     var endQuaternion = new THREE.Quaternion();
     endQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), endRadians);
 
@@ -83,8 +84,14 @@ VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator.prototype = {
    */
   getCallback: function (target, finish) {
     var scope = this;
+
+    // what to animate:
     this.target = target;
+
+    // what to do after completion
     this.finish = finish;
+
+    // trigger the animation
     this.tween();
 
     /**
