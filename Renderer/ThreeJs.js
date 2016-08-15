@@ -234,7 +234,10 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             // children can be a node or an array
             if ( node.children.has('node') ) {
               // children is a node
-              object.add(parseNode(node.children));
+              var objects = parseNode(node.children);
+              if ( false !== objects ) {
+                object.add(objects);
+              }
             } else if ( node.children.has('length') ) {
               // children should be an array
               for ( var i = 0; i < node.children.length; i++ ) {
