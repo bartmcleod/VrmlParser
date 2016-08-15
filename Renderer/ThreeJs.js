@@ -224,6 +224,14 @@ VrmlParser.Renderer.ThreeJs.prototype = {
         case 'PositionInterpolator':
           // only keeping the object, because we are interested in its original values
           break;
+        case 'Switch':
+          // Switch is a list of nodes from which is chosen based on whichChoice, which is the index.
+          if (node.whichChoice >= 0 && node.whichChoice < node.choice.length) {
+            object = parseNode(node.choice[node.whichChoice]);
+          } else {
+            object = false;
+          }
+          break;
         case 'Group':
         case 'Transform':
           // Group is basically the same as Object3D, only the type is set to Group

@@ -64,18 +64,31 @@ node
 			if (undefined !== p.node) {
 				//console.log(p.node + ' node found');
 
-				// if the node does not already have children, create children here
-				if (undefined === n.children) {
-					n.children = [];
-				}
+                // are we processing a Switch node?
+                if ('Switch' === n.node) {
 
-				// @todo for an Inline node, we could use the parser (named 'parser') and fs here, to fetch the inline file and parse it
-				// on the other hand, it could be left up to the renderers what to do with the inline node.
-				/*
-				@see http://pegjs.org/documentation#grammar-syntax-and-semantics
-				The code inside the predicate can also access the parser object using the parser variable and options passed to the parser using the options variable.
-				*/
-				n.children.push(p);
+                    // if the switch does not already have choice, create choice here
+                    if (undefined === n.choice) {
+                        n.choice = [];
+                    }
+
+                    n.choice.push(p);
+                } else {
+                    // not a Switch, some other node, which has children.
+
+                    // if the node does not already have children, create children here
+                    if (undefined === n.children) {
+                        n.children = [];
+                    }
+
+                    // @todo for an Inline node, we could use the parser (named 'parser') and fs here, to fetch the inline file and parse it
+                    // on the other hand, it could be left up to the renderers what to do with the inline node.
+                    /*
+                    @see http://pegjs.org/documentation#grammar-syntax-and-semantics
+                    The code inside the predicate can also access the parser object using the parser variable and options passed to the parser using the options variable.
+                    */
+                    n.children.push(p);
+				}
 
 			} else if (undefined !== p.name) {
 				// p is a property
