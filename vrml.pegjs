@@ -198,7 +198,9 @@ digit1_9      = [1-9]
 e             = [eE]
 exp           = e (minus / plus)? DIGIT+
 frac          = decimal_point DIGIT+
-int           = zero / (digit1_9 DIGIT*)
+int           = s:int_start c:int_continued {return s + c;}
+int_start     = zero / digit1_9
+int_continued = i:DIGIT* {return i.join('');}
 minus         = "-"
 plus          = "+"
 zero          = "0"
@@ -278,7 +280,8 @@ face
 
 index
 	= ws i:int ws value_separator ws
-	{ if (i==0) { return i; } return i.join(''); }
+	{ return i; }
+
 
 rotation
 	= ws x:number ws y:number ws z:number ws radians:number ws

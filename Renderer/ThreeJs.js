@@ -226,7 +226,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           break;
         case 'Switch':
           // Switch is a list of nodes from which is chosen based on whichChoice, which is the index.
-          if (node.whichChoice >= 0 && node.whichChoice < node.choice.length) {
+          if ( node.whichChoice >= 0 && node.whichChoice < node.choice.length ) {
             object = parseNode(node.choice[node.whichChoice]);
           } else {
             object = false;
@@ -504,16 +504,48 @@ VrmlParser.Renderer.ThreeJs.prototype = {
                 uvIndexes = node.texCoordIndex[i];
               }
 
-              // vrml support multipoint indexed face sets (more then 3 vertices). You must calculate the composing triangles here
+              // vrml supports multipoint indexed face sets (more then 3 vertices). You must calculate the composing triangles here
               skip = 0;
 
               // Face3 only works with triangles, but IndexedFaceSet allows shapes with more then three vertices, build them of triangles
               while ( indexes.length >= 3 && skip < ( indexes.length - 2 ) ) {
+                /*
+                 Protect against faces for which no vertices are defined.
+
+                 Certain software exports VRML with faces that cannot exist, because they are built of
+                 undefined vertices. We should not add those faces, as they are useless and Three chokes
+                 on them.
+                 */
+                var a = indexes[0];
+                var b = indexes[skip + (node.ccw ? 1 : 2)];
+                var c = indexes[skip + (node.ccw ? 2 : 1)];
+
+                if (
+                  undefined === object.vertices[a]
+                  || undefined === object.vertices[b]
+                  || undefined === object.vertices[c]
+                ) {
+                  if ( undefined === object.vertices[a] ) {
+                    console.log('Skipping missing index a: ' + a);
+                  }
+                  if ( undefined === object.vertices[b] ) {
+                    console.log('Skipping missing index b: ' + b);
+                  }
+                  if ( undefined === object.vertices[c] ) {
+                    console.log('Skipping missing index c:' + c);
+                  }
+                  // console.log(node.coordIndex);
+                  // console.log(indexes);
+                  // console.log(object.vertices);
+
+                  continue;
+                }
+                /* /protection */
 
                 var face = new THREE.Face3(
-                  indexes[0],
-                  indexes[skip + (node.ccw ? 1 : 2)],
-                  indexes[skip + (node.ccw ? 2 : 1)],
+                  a,
+                  b,
+                  c,
                   null // normal, will be added later
                   // todo: pass in the color, if a color index is present
                 );
