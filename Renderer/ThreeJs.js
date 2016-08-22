@@ -612,7 +612,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
                 var a = indexes[p];
 
                 var pointA = vertices[a];
-                
+
                 object.vertices.push(new THREE.Vector3(pointA.x, pointA.y, pointA.z));
               }
 
@@ -621,7 +621,27 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             object.computeBoundingSphere();
 
           }
+          // @todo: is there a color property to support?
+          break;
+        case 'PointSet':
+          var vec;
+          var point;
+          var object = new THREE.Geometry();
 
+          if ( node.has('coord') ) {
+
+            for ( var k = 0, l = node.coord.point.length; k < l; k++ ) {
+
+              point = node.coord.point[k];
+
+              vec = new THREE.Vector3(point.x, point.y, point.z);
+
+              object.vertices.push(vec);
+
+            }
+
+          }
+          // @todo: support color property
           break;
         case 'TouchSensor':
           // just explicitly keep the object (by not setting it to false), do nothing else
