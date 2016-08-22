@@ -309,7 +309,9 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           surroundingGroup.add(object);
           break;
         case 'Shape':
-          object = new THREE.Mesh();
+          var isLine = node.has('geometry') && 'IndexedLineSet' === node.geometry.node;
+
+          object = isLine ? new THREE.Line() : new THREE.Mesh();
 
           if ( node.has('geometry') ) {
             object.geometry = parseNode(node.geometry);
@@ -327,39 +329,54 @@ VrmlParser.Renderer.ThreeJs.prototype = {
               // sugar
               vrmlMaterial.has = has;
 
-              var material = new THREE.MeshPhongMaterial();
+              if ( isLine ) {
+                // @todo: we use LineBasicMaterial, is this always appropriate for VRML?
+                var material = new THREE.LineBasicMaterial();
 
-              if ( vrmlMaterial.has('diffuseColor') ) {
+                if ( vrmlMaterial.has('color') ) {
 
-                var materialColor = convertVectorToColor(vrmlMaterial.diffuseColor);
+                  var materialColor = convertVectorToColor(vrmlMaterial.color);
 
-                material.color.setRGB(materialColor.r, materialColor.g, materialColor.b);
+                  material.color.setRGB(materialColor.r, materialColor.g, materialColor.b);
 
-              }
+                }
+              } else {
 
-              if ( vrmlMaterial.has('emissiveColor') ) {
+                // @todo: we use a MeshPhongMaterial for meshes, but is this always appropriate for VRML?
+                var material = new THREE.MeshPhongMaterial();
 
-                var emissiveColor = convertVectorToColor(vrmlMaterial.emissiveColor);
+                if ( vrmlMaterial.has('diffuseColor') ) {
 
-                material.emissive.setRGB(emissiveColor.r, emissiveColor.g, emissiveColor.b);
+                  var materialColor = convertVectorToColor(vrmlMaterial.diffuseColor);
 
-              }
+                  material.color.setRGB(materialColor.r, materialColor.g, materialColor.b);
 
-              if ( vrmlMaterial.has('specularColor') ) {
+                }
 
-                var specularColor = convertVectorToColor(vrmlMaterial.specularColor);
+                if ( vrmlMaterial.has('emissiveColor') ) {
 
-                material.specular.setRGB(specularColor.r, specularColor.g, specularColor.b);
+                  var emissiveColor = convertVectorToColor(vrmlMaterial.emissiveColor);
 
-              }
+                  material.emissive.setRGB(emissiveColor.r, emissiveColor.g, emissiveColor.b);
 
-              if ( vrmlMaterial.has('transparency') ) {
+                }
 
-                // transparency is opposite of opacity
-                material.opacity = Math.abs(1 - vrmlMaterial.transparency);
+                if ( vrmlMaterial.has('specularColor') ) {
 
-                material.transparent = true;
+                  var specularColor = convertVectorToColor(vrmlMaterial.specularColor);
 
+                  material.specular.setRGB(specularColor.r, specularColor.g, specularColor.b);
+
+                }
+
+                if ( vrmlMaterial.has('transparency') ) {
+
+                  // transparency is opposite of opacity
+                  material.opacity = Math.abs(1 - vrmlMaterial.transparency);
+
+                  material.transparent = true;
+
+                }
               }
 
             }
@@ -509,38 +526,10 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
               // Face3 only works with triangles, but IndexedFaceSet allows shapes with more then three vertices, build them of triangles
               while ( indexes.length >= 3 && skip < ( indexes.length - 2 ) ) {
-                /*
-                 Protect against faces for which no vertices are defined.
 
-                 Certain software exports VRML with faces that cannot exist, because they are built of
-                 undefined vertices. We should not add those faces, as they are useless and Three chokes
-                 on them.
-                 */
                 var a = indexes[0];
                 var b = indexes[skip + (node.ccw ? 1 : 2)];
                 var c = indexes[skip + (node.ccw ? 2 : 1)];
-
-                if (
-                  undefined === object.vertices[a]
-                  || undefined === object.vertices[b]
-                  || undefined === object.vertices[c]
-                ) {
-                  if ( undefined === object.vertices[a] ) {
-                    console.log('Skipping missing index a: ' + a);
-                  }
-                  if ( undefined === object.vertices[b] ) {
-                    console.log('Skipping missing index b: ' + b);
-                  }
-                  if ( undefined === object.vertices[c] ) {
-                    console.log('Skipping missing index c:' + c);
-                  }
-                  // console.log(node.coordIndex);
-                  // console.log(indexes);
-                  // console.log(object.vertices);
-
-                  continue;
-                }
-                /* /protection */
 
                 var face = new THREE.Face3(
                   a,
@@ -582,6 +571,56 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           //object.computeVertexNormals(); // does not show
 
           object.computeBoundingSphere();
+
+          break;
+
+        case 'IndexedLineSet':
+          var vec;
+          var point;
+          var object = new THREE.Geometry();
+          var vertices = [];
+
+          // first create a buffer of vectors to use for the points.
+          // the challenge lies in the fact that ThreeJs draws lines in the order the vertices are added
+          // I do not yet see a way to tell ThreeJs to draw any amount of lines between all points.
+          // Could it be just a simple as using a LineMaterial for a shape?
+          if ( node.has('coord') ) {
+
+            for ( var k = 0, l = node.coord.point.length; k < l; k++ ) {
+
+              point = node.coord.point[k];
+
+              vec = new THREE.Vector3(point.x, point.y, point.z);
+
+              vertices.push(vec);
+
+            }
+
+          }
+
+          if ( node.has('coordIndex') ) {
+
+            for ( var i = 0, j = node.coordIndex.length; i < j; i++ ) {
+
+              indexes = node.coordIndex[i];
+
+              // loop over all the points and add their vertex to the geometry.
+              // hopefully, using the same vertex twice will not lead to an error,
+              // but  just draw a line as intended.
+              for ( var p = 0; p < indexes.length; p++ ) {
+
+                var a = indexes[p];
+
+                var pointA = vertices[a];
+                
+                object.vertices.push(new THREE.Vector3(pointA.x, pointA.y, pointA.z));
+              }
+
+            }
+
+            object.computeBoundingSphere();
+
+          }
 
           break;
         case 'TouchSensor':
