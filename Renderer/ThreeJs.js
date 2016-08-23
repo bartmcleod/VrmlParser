@@ -218,7 +218,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
       // this will be the returned ThreeJS object returned from parseNode, if not overwritten
       var object = new THREE.Object3D();
       var surroundingGroup = false;
-
+      // @todo: refactor the switch to a class name with parse method for each node: parse(writer, node)
       switch ( node.node ) {
         case 'OrientationInterpolator':
         case 'PositionInterpolator':
@@ -314,8 +314,6 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
           object = isLine ? new THREE.Line() : (isPoint ? new THREE.Points({size: 0.01}) : new THREE.Mesh());
 
-
-
           if ( node.has('geometry') ) {
             object.geometry = parseNode(node.geometry);
           }
@@ -350,20 +348,24 @@ VrmlParser.Renderer.ThreeJs.prototype = {
                 //scope.log('Points object');
                 //scope.log(vrmlMaterial);
 
-                material = new THREE.PointsMaterial();
-
-                var materialColor
+                // color
+                var c;
 
                 if ( vrmlMaterial.has('diffuseColor') ) {
-                  materialColor = convertVectorToColor(vrmlMaterial.diffuseColor);
+                  c = convertVectorToColor(vrmlMaterial.diffuseColor);
                 }
                 if ( vrmlMaterial.has('emissiveColor') ) {
-                  materialColor = convertVectorToColor(vrmlMaterial.emissiveColor);
+                  c = convertVectorToColor(vrmlMaterial.emissiveColor);
                 }
 
-                material.color.setRGB(materialColor.r, materialColor.g, materialColor.b);
+                material = new THREE.ShaderMaterial({
+                  vertexShader: 'void main() {' +
+                  '\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n' +
+                  '\n\tgl_PointSize = 3.0;\n' +
+                  '}',
+                  fragmentShader: 'void main() {\n\tgl_FragColor = vec4( ' + c.r + ', ' + c.g + ', ' + c.b + ', 1.0 );\n}'
+                });
 
-                //scope.log(material);
               } else {
                 //scope.log('Mesh object');
 
@@ -711,8 +713,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
         } else if ( node.has('node') ) {
           object.name = node.node;
         }
-        object.castShadow = ! isPoint;
-        object.receiveShadow = ! isPoint;
+        object.castShadow = !isPoint;
+        object.receiveShadow = !isPoint;
       }
 
       if ( false !== surroundingGroup ) {
@@ -734,6 +736,6 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
     // @todo: parse nodeTree.nodeDefinitions
 
-  }
+  },
 
 };
