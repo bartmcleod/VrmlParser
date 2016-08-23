@@ -425,11 +425,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             }
 
             if ( 'IndexedFaceSet' === node.geometry.node ) {
-              if ( false === node.geometry.node.solid ) {
+              //if ( false === node.geometry.node.solid ) {
 
                 object.material.side = THREE.DoubleSide;
 
-              }
+              //}
             }
 
           }
