@@ -310,8 +310,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           break;
         case 'Shape':
           var isLine = node.has('geometry') && 'IndexedLineSet' === node.geometry.node;
+          var isPoint = node.has('geometry') && 'PointSet' === node.geometry.node;
 
-          object = isLine ? new THREE.Line() : new THREE.Mesh();
+          object = isLine ? new THREE.Line() : (isPoint ? new THREE.Points({size: 0.01}) : new THREE.Mesh());
+
+
 
           if ( node.has('geometry') ) {
             object.geometry = parseNode(node.geometry);
@@ -325,13 +328,15 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
             if ( appearance.has('material') ) {
               var vrmlMaterial = appearance.material;
+              var material;
 
               // sugar
               vrmlMaterial.has = has;
 
               if ( isLine ) {
+                //scope.log('Line object');
                 // @todo: we use LineBasicMaterial, is this always appropriate for VRML?
-                var material = new THREE.LineBasicMaterial();
+                material = new THREE.LineBasicMaterial();
 
                 if ( vrmlMaterial.has('color') ) {
 
@@ -340,10 +345,30 @@ VrmlParser.Renderer.ThreeJs.prototype = {
                   material.color.setRGB(materialColor.r, materialColor.g, materialColor.b);
 
                 }
+              } else if ( isPoint ) {
+                // points in ThreeJS only support color
+                //scope.log('Points object');
+                //scope.log(vrmlMaterial);
+
+                material = new THREE.PointsMaterial();
+
+                var materialColor
+
+                if ( vrmlMaterial.has('diffuseColor') ) {
+                  materialColor = convertVectorToColor(vrmlMaterial.diffuseColor);
+                }
+                if ( vrmlMaterial.has('emissiveColor') ) {
+                  materialColor = convertVectorToColor(vrmlMaterial.emissiveColor);
+                }
+
+                material.color.setRGB(materialColor.r, materialColor.g, materialColor.b);
+
+                //scope.log(material);
               } else {
+                //scope.log('Mesh object');
 
                 // @todo: we use a MeshPhongMaterial for meshes, but is this always appropriate for VRML?
-                var material = new THREE.MeshPhongMaterial();
+                material = new THREE.MeshPhongMaterial();
 
                 if ( vrmlMaterial.has('diffuseColor') ) {
 
@@ -398,11 +423,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             }
 
             if ( 'IndexedFaceSet' === node.geometry.node ) {
-              //if ( false === node.geometry.node.solid ) {
+              if ( false === node.geometry.node.solid ) {
 
-              object.material.side = THREE.DoubleSide;
+                object.material.side = THREE.DoubleSide;
 
-              // }
+              }
             }
 
           }
@@ -624,6 +649,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           // @todo: is there a color property to support?
           break;
         case 'PointSet':
+
           var vec;
           var point;
           var object = new THREE.Geometry();
@@ -641,7 +667,21 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             }
 
           }
-          // @todo: support color property
+
+          object.computeBoundingSphere();
+
+          // if ( node.has('color') ) {
+          //   for ( var k = 0, l = node.coord.point.length; k < l; k++ ) {
+          //
+          //     point = node.coord.point[k];
+          //
+          //     vec = new THREE.Vector3(point.x, point.y, point.z);
+          //
+          //     geometry.vertices.push(vec);
+          //
+          //   }
+          // }
+
           break;
         case 'TouchSensor':
           // just explicitly keep the object (by not setting it to false), do nothing else
@@ -671,8 +711,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
         } else if ( node.has('node') ) {
           object.name = node.node;
         }
-        object.castShadow = true;
-        object.receiveShadow = true;
+        object.castShadow = ! isPoint;
+        object.receiveShadow = ! isPoint;
       }
 
       if ( false !== surroundingGroup ) {
