@@ -70,6 +70,8 @@ VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
 
       if (index >= scope.keyValue.length) {
         console.log('finish');
+        // now make the end position of the target exactly the same as p, to correct any rounding errors from tweening
+        target.position = p;
         finish();
         return;
       }
@@ -77,7 +79,7 @@ VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
       p = scope.getPosition(index);
       scope.log(p);
       tween = scope.tween(target, p);
-      tween.onComplete = this; // @todo: untested, does not seem to work
+      tween.onComplete = this;
     });
 
     /**

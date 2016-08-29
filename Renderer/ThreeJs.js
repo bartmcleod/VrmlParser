@@ -492,6 +492,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
         case 'Box':
           var s = node.size;
           object = new THREE.BoxGeometry(s.x, s.y, s.z);
+          object.shading = THREE.SmoothShading;
           break;
 
         case 'Cylinder':
@@ -509,6 +510,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
         case 'IndexedFaceSet':
 
           object = new THREE.Geometry();
+          object.shading = THREE.SmoothShading;
 
           var indexes, uvIndexes, uvs;
 
