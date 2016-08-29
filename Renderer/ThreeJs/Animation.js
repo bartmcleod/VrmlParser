@@ -148,18 +148,12 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    */
   findSensor: function (object, sensorType) {
     if ( null === object ) {
-      this.log('Cannot find a sensor in null');
+      this.log('Cannot find a sensor of type ' + sensorType + ' in null');
       return false;
     }
 
-    if ( 'undefined' === typeof object.parent || null === object.parent ) {
-      this.log('We cannot go up the tree any further');
-      // we're out of parents, there's not a single sensorType to be found here.
-      return false;
-    }
-
-    for ( var b = 0; b < object.parent.children.length; b++ ) {
-      var checkNode = object.parent.children[b];
+    for ( var b = 0; b < object.children.length; b++ ) {
+      var checkNode = object.children[b];
       if ( 'undefined' !== typeof checkNode.userData.originalVrmlNode
         && sensorType === checkNode.userData.originalVrmlNode.node ) {
         // do a proof of concept here, but ideally, only trigger an already registered animation
@@ -174,7 +168,14 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
       }
     }
 
-    this.log('No ' + sensorType + ' in parent');
+    this.log('No ' + sensorType + ' found amongst the children of the following  node:');
+    this.log(checkNode);
+
+    if ( 'undefined' === typeof object.parent || null === object.parent ) {
+      this.log('We cannot go up the tree any further');
+      // we're out of parents, there's not a single sensorType to be found here.
+      return false;
+    }
 
     this.log('Searching up the tree');
     // not found in the parent object, look in its parent in turn (go up the object tree recursively)
@@ -280,23 +281,26 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
           scope.addAnimation(touch, callback);
         }
 
-        if ( true === scope.debug ) {
-          // draw a line where the object was clicked
-          if ( null !== line ) {
-            scene.remove(line);
-          }
-
-          var lineMaterial = new THREE.LineBasicMaterial({
-            color: 0x0000ff
-          });
-          var geometry = new THREE.Geometry();
-
-          geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x, raycaster.ray.origin.y, raycaster.ray.origin.z));
-          geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x + (raycaster.ray.direction.x * 100000), raycaster.ray.origin.y + (raycaster.ray.direction.y * 100000), raycaster.ray.origin.z + (raycaster.ray.direction.z * 100000)));
-          line = new THREE.Line(geometry, lineMaterial);
-          scene.add(line);
-          // / draw a line
-        }
+        // drawing a line for diagnostic purposes.
+        // keep this disabled, unless you really, really need it.
+        // The problem is: the line can prevent finding your sensor if the line is clicked instead of your object.
+        // if ( true === scope.debug ) {
+        //   // draw a line where the object was clicked
+        //   if ( null !== line ) {
+        //     scene.remove(line);
+        //   }
+        //
+        //   var lineMaterial = new THREE.LineBasicMaterial({
+        //     color: 0x0000ff
+        //   });
+        //   var geometry = new THREE.Geometry();
+        //
+        //   geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x, raycaster.ray.origin.y, raycaster.ray.origin.z));
+        //   geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x + (raycaster.ray.direction.x * 100000), raycaster.ray.origin.y + (raycaster.ray.direction.y * 100000), raycaster.ray.origin.z + (raycaster.ray.direction.z * 100000)));
+        //   line = new THREE.Line(geometry, lineMaterial);
+        //   scene.add(line);
+        //   // / draw a line
+        // }
 
       }
       ,
