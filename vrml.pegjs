@@ -303,7 +303,7 @@ uri
 
 quoted_string
 	= ws quote s:[^"]* quote ws
-	{ return '"' + s.join('') + '"'; }
+	{ return  s.join(''); }
 
 quote
 	= '"'
