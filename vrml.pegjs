@@ -174,6 +174,7 @@ value "value"
   / rotation
   / point
   / vector
+  / vector2
   / use_statement
   / array
   / number
@@ -248,6 +249,11 @@ point
 vector
 	= ws x:number ws y:number ws z:number ws comment?
 	{ return {x:x, y:y, z:z}; }
+
+/* for example scale of a texture is a vec2 */
+vector2
+	= ws x:number ws y:number ws comment?
+	{ return {x:x, y:y}; }
 
 def
 	= "DEF"
