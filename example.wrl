@@ -28,9 +28,6 @@ Group {
 
         }
 
-
-
-
         DirectionalLight {
             ambientIntensity  0
             color             0.6 0.6 0.8
@@ -40,7 +37,7 @@ Group {
         }
 
         Background {
-            groundAngle  [ 1.5 1.6 ]
+            groundAngle  [ 1.5, 1.6 ]
             groundColor  [ 0.2 0.6 0.3, 0.4 0.4 0.35, 0.3 0.5 0.6  ]
             backUrl      []
             bottomUrl    []
