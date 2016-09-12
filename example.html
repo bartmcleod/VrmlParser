@@ -78,7 +78,7 @@
 
     var container;
 
-    var camera, controls, scene, renderer;
+    var camera, controls, scene, renderer, dirLight;
 
     var animation;
 
@@ -88,6 +88,17 @@
 
     init();
     animate();
+
+    function setupControls(oldCamera, newCamera){
+        // setup controls
+        controls = new THREE.OrbitControls(camera);
+        controls.rotateSpeed = 1;
+        controls.zoomSpeed = 0.2;
+        controls.panSpeed = 0.2;
+
+        controls.enableZoom = true;
+        controls.enablePan = true;
+    }
 
     function init() {
 
@@ -115,15 +126,16 @@
 
         // light
 
-        var dirLight = new THREE.DirectionalLight(0xffffff);
+        dirLight = new THREE.DirectionalLight(0xffffff);
         dirLight.position.set(500, 500, 1000).normalize();
         dirLight.castShadow = true;
 
+        scene.add(dirLight);
 //        var ambientLight = new THREE.AmbientLight(0x444444);
 
-        camera.add(dirLight);
+        //camera.add(dirLight);
 //        scene.add(ambientLight);
-        camera.add(dirLight.target);
+        //camera.add(dirLight.target);
 
         var debug = true;
         var vrmlConverter = new VrmlParser.Renderer.ThreeJs(debug);
@@ -144,7 +156,7 @@
         // VRML parser example:
         var xhrLoader = new THREE.XHRLoader();
         // onLoad, onProgress, onError
-        xhrLoader.load('example.wrl', function (data) {
+        xhrLoader.load('single_vaneyck.wrl', function (data) {
             try {
                 var tree = vrmlParser.parse(data);
             } catch ( e ) {
@@ -167,6 +179,7 @@
                 var viewpoint = event.target.dataset.name;
                 console.log('clicked ' + viewpoint);
                 camera = vrmlConverter.viewpoints[viewpoint].getCamera();
+                setupControls();
             };
 
             for ( a in vrmlConverter.viewpoints ) {
