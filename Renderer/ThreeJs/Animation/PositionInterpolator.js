@@ -3,7 +3,7 @@
  * @since May 25, 2016
  *
  * Adds animation and interaction support to the VrmlParser.Renderer.ThreeJs
- * @todo: make support for the PositionInterpolator universal: use all the keys, take time into account and use any axis, not only y.
+ * @todo: take time into account
  */
 var VrmlParser = VrmlParser || {};
 

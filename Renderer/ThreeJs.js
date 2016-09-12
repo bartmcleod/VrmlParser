@@ -98,7 +98,6 @@ VrmlParser.Renderer.ThreeJs.prototype = {
      * @param boolean directionIsDown Whether to work bottom up or top down.
      */
     var paintFaces = function (geometry, radius, angles, colors, directionIsDown) {
-      // @todo: while this is all neat and jolly, we really should declare each variable on its own line
       var f, n, p, vertexIndex, color;
 
       var direction = directionIsDown ? 1 : -1;
@@ -136,7 +135,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           for ( var index = 0; index < colors.length; index++ ) {
 
             // linear interpolation between aColor and bColor, calculate proportion
-            // A is previous point (angle)
+            // A is previous point (vertex)
             if ( index === 0 ) {
 
               A.x = 0;
@@ -220,6 +219,17 @@ VrmlParser.Renderer.ThreeJs.prototype = {
       var surroundingGroup = false;
       // @todo: refactor the switch to a class name with parse method for each node: parse(writer, node)
       switch ( node.node ) {
+        case 'Viewpoint':
+          // let the Viewpoint class handle everthing
+          object = false;
+          //scope.log('Got a Viewpoint named ' + (node.name ? node.name : node.description));
+          // this is the first node that has its own class, when all are done, remove the switch
+          var viewpoint = new VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint(node, scope.debug);
+          surroundingGroup = viewpoint.parse(scene);
+          // store the group with the camera in the list of cameras, by its name
+          scope.viewpoints[surroundingGroup.children[0].name] = surroundingGroup;
+          break;
+
         case 'OrientationInterpolator':
         case 'PositionInterpolator':
           // only keeping the object, because we are interested in its original values
@@ -427,7 +437,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             if ( 'IndexedFaceSet' === node.geometry.node ) {
               //if ( false === node.geometry.node.solid ) {
 
-                object.material.side = THREE.DoubleSide;
+              object.material.side = THREE.DoubleSide;
 
               //}
             }
@@ -710,10 +720,12 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           object.userData.originalVrmlNode = node;
         }
 
-        if ( node.has('name') ) {
-          object.name = node.name;
-        } else if ( node.has('node') ) {
-          object.name = node.node;
+        if ( '' === object.name ) {
+          if ( node.has('name') ) {
+            object.name = node.name;
+          } else if ( node.has('node') ) {
+            object.name = node.node;
+          }
         }
         object.castShadow = !isPoint;
         object.receiveShadow = !isPoint;
