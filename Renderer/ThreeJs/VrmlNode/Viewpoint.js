@@ -41,7 +41,6 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint.prototype = {
     // @todo: support for jump (bool)
 
     var camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.lookAt(0,0,0);
 
     var surroundingGroup = new THREE.Group();
     surroundingGroup.add(camera);
@@ -59,7 +58,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint.prototype = {
     }
 
     var p = this.node.position;
-    surroundingGroup.position = new THREE.Vector3(p.x, p.y, p.z);
+    surroundingGroup.position.set(p.x, p.y, p.z);
 
     var o = this.node.orientation;
     var vector3 = new THREE.Vector3(o.x, o.y, o.z);
