@@ -217,23 +217,31 @@ VrmlParser.Renderer.ThreeJs.prototype = {
       // this will be the returned ThreeJS object returned from parseNode, if not overwritten
       var object = new THREE.Object3D();
       var surroundingGroup = false;
-      // @todo: refactor the switch to a class name with parse method for each node: parse(writer, node)
+      // @todo: WIP refactor the switch to a class name with parse method for each node: parse(writer, node)
       switch ( node.node ) {
+        case 'NavigationInfo':
+          // no object needed, NavigationInfo initializes controls in the scene
+          object = false;
+          var navigationInfo = new VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo(node, scope.debug);
+          navigationInfo.parse(scene);
+          break;
+
         case 'Viewpoint':
-          // let the Viewpoint class handle everthing
+          // no object needed, let the Viewpoint class adds a camera to the scene
           object = false;
           //scope.log('Got a Viewpoint named ' + (node.name ? node.name : node.description));
-          // this is the first node that has its own class, when all are done, remove the switch
           var viewpoint = new VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint(node, scope.debug);
           surroundingGroup = viewpoint.parse(scene);
           // store the group with the camera in the list of cameras, by its name
           scope.viewpoints[surroundingGroup.children[0].name] = surroundingGroup;
+          scene.add(surroundingGroup);
           break;
 
         case 'OrientationInterpolator':
         case 'PositionInterpolator':
           // only keeping the object, because we are interested in its original values
           break;
+
         case 'Switch':
           // Switch is a list of nodes from which is chosen based on whichChoice, which is the index.
           if ( node.whichChoice >= 0 && node.whichChoice < node.choice.length ) {
@@ -242,6 +250,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
             object = false;
           }
           break;
+
         case 'Group':
         case 'Transform':
           // Group is basically the same as Object3D, only the type is set to Group
@@ -318,6 +327,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
           surroundingGroup.add(object);
           break;
+
         case 'Shape':
           var isLine = node.has('geometry') && 'IndexedLineSet' === node.geometry.node;
           var isPoint = node.has('geometry') && 'PointSet' === node.geometry.node;
@@ -414,25 +424,42 @@ VrmlParser.Renderer.ThreeJs.prototype = {
                   material.transparent = true;
 
                 }
+
+                if ( appearance.has('texture') ) {
+
+                  // ImageTexture node?
+                  if ( undefined !== appearance.texture.node && appearance.texture.node === 'ImageTexture' ) {
+
+                    var imageUrl = appearance.texture.url[0];
+
+                    if ( undefined != imageUrl ) {
+                      scope.log('Loading image: ' + imageUrl);
+
+                      // @todo: support for repeatS and repeatT
+
+                      var texture = new THREE.TextureLoader().load(imageUrl, function (texture) {
+                        if ( undefined !== texture.image ) {
+                          texture.repeat.set(texture.image.height / texture.image.width * 2, 2);
+                        }
+                      });
+
+                      texture.wrapS = THREE.ClampToEdgeWrapping;
+                      texture.wrapT = THREE.ClampToEdgeWrapping;
+                      scope.log(texture);
+
+                      material.map = texture;
+                    }
+
+                  }
+
+                }
+
+                //@todo: support for TextureTransform
               }
 
             }
 
             object.material = material;
-
-            if ( 'ImageTexture' === vrmlMaterial.node ) {
-
-              var textureName = vrmlMaterial.textureName;
-
-              if ( textureName ) {
-
-                object.material.name = textureName[1];
-
-                object.material.map = textureLoader.load(texturePath + textureName[1]);
-
-              }
-
-            }
 
             if ( 'IndexedFaceSet' === node.geometry.node ) {
               //if ( false === node.geometry.node.solid ) {
@@ -528,11 +555,14 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
           if ( node.has('texCoord') ) {
 
-            uvs = node.texCoord.points;
+            uvs = node.texCoord.point;
 
           }
 
           if ( node.has('coord') ) {
+            if ( !uvs ) {
+              uvs = node.coord.point;
+            }
 
             for ( var k = 0, l = node.coord.point.length; k < l; k++ ) {
 
@@ -558,6 +588,9 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
               if ( node.has('texCoordIndex') ) {
                 uvIndexes = node.texCoordIndex[i];
+              } else {
+                // default texture coord index
+                uvIndexes = indexes;
               }
 
               // vrml supports multipoint indexed face sets (more then 3 vertices). You must calculate the composing triangles here
@@ -593,6 +626,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
                       uvs[uvIndexes[skip + (node.ccw ? 2 : 1)]].y
                     )
                   ]);
+                } else {
+                  scope.log('Missing either uvs or indexes');
                 }
 
                 skip++;

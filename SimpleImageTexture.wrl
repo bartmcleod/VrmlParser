@@ -1,0 +1,37 @@
+#VRML V2.0 utf8
+NavigationInfo {
+
+}
+Transform {
+    center		0 0 0
+    children		[
+
+        Shape {
+            appearance
+
+            Appearance {
+                material          Material {
+                    ambientIntensity  0.2
+                    diffuseColor      0.8 0.8 0.8
+                    emissiveColor     0 0 0
+                    shininess         0.2
+                    specularColor     0 0 0
+                    transparency      0
+                }
+                texture           ImageTexture {
+                    url     ["images/crate.jpg"]
+                    repeatS FALSE
+                    repeatT FALSE
+                }
+
+            }
+
+
+            geometry Box {
+                size 1 1 1
+            }
+        }
+
+    ]
+
+}
