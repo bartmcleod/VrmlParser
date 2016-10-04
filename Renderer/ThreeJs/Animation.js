@@ -147,29 +147,65 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    * @returns {boolean}|{string} name of the sensor or false.
    */
   findSensor: function (object, sensorType) {
+    var scope = this;
+
+    /**
+     * Will find a sensor in the children of obj, if any.
+     *
+     * It will do so recursively going down the object tree.
+     * It will not search up the tree to avoid infinite recursion.
+     *
+     * @param obj
+     * @param sensorType
+     */
+    function findSensorinChildrenOf(obj, sensorType) {
+      if ( undefined === obj.children ) {
+        return false;
+      }
+
+      for ( var b = 0; b < obj.children.length; b++ ) {
+        var checkNode = obj.children[b];
+
+        if ( undefined === checkNode ) {
+          continue;
+        }
+
+        var eventName;
+
+        // check this node
+        if ( 'undefined' !== typeof checkNode.userData.originalVrmlNode
+          && sensorType === checkNode.userData.originalVrmlNode.node ) {
+          // find the first route, we only use TimeSensor to get from one to the next
+          eventName = checkNode.name;
+          scope.log(sensorType + ': ' + eventName);
+          return eventName;
+        }
+
+        var foundItInChildren
+
+        // recurse
+        if ( foundItInChildren = findSensorinChildrenOf(checkNode, sensorType) ) {
+          return foundItInChildren;
+        }
+
+      }
+
+      return false;
+    }
+
     if ( null === object ) {
       this.log('Cannot find a sensor of type ' + sensorType + ' in null');
       return false;
     }
 
-    for ( var b = 0; b < object.children.length; b++ ) {
-      var checkNode = object.children[b];
-      if ( 'undefined' !== typeof checkNode.userData.originalVrmlNode
-        && sensorType === checkNode.userData.originalVrmlNode.node ) {
-        // do a proof of concept here, but ideally, only trigger an already registered animation
-        /*
-         For a quick proof of concept, you can use slerp and the endpoint of a rotation interpolator
-         from the orignial animation. For that you need to combine the routes and get the names.
-         */
-        // find the first route, we only use TimeSensor to get from one to the next
-        var eventName = checkNode.name;
-        this.log(sensorType + ': ' + eventName);
-        return eventName;
-      }
+    var foundItInChildren;
+
+    if ( foundItInChildren = findSensorinChildrenOf(object, sensorType) ) {
+      return foundItInChildren;
     }
 
     this.log('No ' + sensorType + ' found amongst the children of the following  node:');
-    this.log(checkNode);
+    this.log(object);
 
     if ( 'undefined' === typeof object.parent || null === object.parent ) {
       this.log('We cannot go up the tree any further');
