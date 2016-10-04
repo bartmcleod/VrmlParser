@@ -51,8 +51,6 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint.prototype = {
       camera.name = this.node.description;
     }
 
-    surroundingGroup.name = 'surrounding_' + camera.name;
-
     surroundingGroup.getCamera = function(){
       return this.children[0];
     }

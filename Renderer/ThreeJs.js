@@ -227,14 +227,12 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           break;
 
         case 'Viewpoint':
-          // no object needed, let the Viewpoint class adds a camera to the scene
-          object = false;
           //scope.log('Got a Viewpoint named ' + (node.name ? node.name : node.description));
           var viewpoint = new VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint(node, scope.debug);
           surroundingGroup = viewpoint.parse(scene);
           // store the group with the camera in the list of cameras, by its name
-          scope.viewpoints[surroundingGroup.children[0].name] = surroundingGroup;
-          scene.add(surroundingGroup);
+          object = surroundingGroup.getCamera();
+          scope.viewpoints[object.name] = surroundingGroup;
           break;
 
         case 'OrientationInterpolator':
