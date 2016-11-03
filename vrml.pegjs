@@ -30,7 +30,7 @@
 }
 
 vrml
-	= '#VRML V2.0 utf8' vrml:(nodeDefinition / node / comment / route)*
+	= '#VRML V2.0 utf8' vrml:( OrientationInterpolator / nodeDefinition / node / comment / route)*
 	{
 	    // before returning the root vrml object, enricht it with routes and nodeDefinitions
 		vrml.nodeDefinitions = nodeDefinitions;
@@ -39,6 +39,24 @@ vrml
 	}
 
 /* ----- Node ------ */
+OrientationInterpolator
+    = name:(def name:identifier { return name; }) "OrientationInterpolator" begin_node properties:( keyValueForOrientationInterpolator / property)+ end_node
+    {
+    	var n = {name:name, node: "OrientationInterpolator", isDefinition: true}
+        for (var i=0; i < properties.length; i++) {
+        	n[properties[i]['name']] = properties[i]['value'];
+        }
+        // store node for later re-use
+        nodeDefinitions[name] = n;
+        return n;
+    }
+
+keyValueForOrientationInterpolator
+    = ws? "keyValue" begin_array quaternionArray:( q:(q:quaternion value_separator {return q;})* last_q:quaternion {q.push(last_q); return q; } ) end_array
+    {
+        return {name: "keyValue", value: quaternionArray};
+    }
+
 nodeDefinition
     = ws name:(def ws name:identifier ws { return name; }) n:node
     {
@@ -46,13 +64,11 @@ nodeDefinition
         n.isDefinition = true;
         // store node for later re-use
         nodeDefinitions[name] = n;
-        //console.log('Registered as ' + name + ' in nodeDefinitions:');
-        //console.log(n);
         return n;
     }
 
 node
-	= ws t:identifier ws begin_node ws pp:( nodeDefinition / route / property / node / comment )* ws end_node ws
+	= ws t:identifier begin_node pp:( nodeDefinition / route / property / node / comment )* end_node
 	{
 		var n = {node: t};
 
@@ -115,8 +131,34 @@ node
 		return n;
 	}
 
+
 property
-    = ws name:identifier ws value:value ws comment:comment?
+    =  orientation / coordIndex / pointArray / generic_property
+
+orientation
+	= ws? name:("orientation" / "rotation") q:quaternion
+    { return {name: name, value: q} }
+
+quaternion
+    = ws? x:number " "+ y:number " "+ z:number " "+ radians:number ws?
+    { return {x: x, y: y, z: z, radians: radians} }
+
+coordIndex
+    = "coordIndex" ws? begin_array comment? ws? face:face+ ws? comment? end_array ws?
+    {
+        return {name: "coordIndex", value: face};
+    }
+
+
+
+pointArray
+    = name:("point" / "vector") ws? begin_array comment? ws? pointArray:point+ comment? end_array ws?
+    {
+        return {name: name, value: pointArray};
+    }
+
+generic_property
+    = ws? name:identifier ws value:value ws comment:comment?
     {
         var p = { name:name, value:value };
 
@@ -129,7 +171,7 @@ property
     }
 
 identifier "identifier"
-	= o:[A-Za-z0-9_]+ { return o.join(''); }
+	= ws? o:[A-Za-z0-9_]+ ws? { return o.join(''); }
 
 /* ----- Arrays (The VRML way) ----- */
 
@@ -166,19 +208,19 @@ array "array"
 
 value "value"
   = false
+  / OrientationInterpolator
   / face
   / null
   / true
   / nodeDefinition
   / node
-  / rotation
   / point
+  / pointArray
   / vector
   / vector2
   / use_statement
   / array
   / number
-  / float
   / identifier
   / url
   / quoted_string
@@ -192,7 +234,7 @@ true  = "true" / "TRUE"  { return true;  }
 /* ----- Numbers ----- */
 
 number "number"
-  = minus? int frac? exp? { return parseFloat(text()); }
+  = minus? ((int frac?) / (frac)) exp? { return parseFloat(text()); }
 
 decimal_point = "."
 digit1_9      = [1-9]
@@ -229,11 +271,13 @@ route_part
 	= name:identifier "." property:identifier
 	{ return { name: name, property: property }; }
 
-begin_array     = ws "[" ws
-begin_node    = ws "{" ws
-end_array       = ws "]" ws
-end_node      = ws "}" ws
-value_separator = ws "," ws
+begin_array     = ws? "[" ws?
+end_array       = ws? "]" ws?
+
+begin_node    = ws? "{" ws?
+end_node      = ws? "}" ws?
+
+value_separator = ws? "," ws?
 name_separator  = ws
 
 ws "whitespace"
@@ -244,10 +288,10 @@ space
 	= " "
 
 point
-	= p:vector "," ws comment? { return p; }
+	= p:vector ","? ws comment? { return p; }
 
 vector
-	= ws x:number ws y:number ws z:number ws comment?
+	= ws? x:number ws y:number ws z:number ws comment?
 	{ return {x:x, y:y, z:z}; }
 
 /* for example scale of a texture is a vec2 */
@@ -256,7 +300,7 @@ vector2
 	{ return {x:x, y:y}; }
 
 def
-	= "DEF"
+	= ws? "DEF" ws?
 	{ return true; }
 
 use_statement
@@ -281,17 +325,12 @@ use
 	{ return true; }
 
 face
-	= points:index+ "-1" ws
+	= points:index+ "-1" ","? ws
 	{ return points; }
 
 index
-	= ws i:int ws value_separator ws
-	{ return i; }
-
-
-rotation
-	= ws x:number ws y:number ws z:number ws radians:number ws
-	{ return {x:x, y:y, z:z, radians:radians}; }
+	= i:int (("," " "?) / " "+)
+    { return i }
 
 url
 	= ws begin_array ws quote uri:uri quote ws end_array ws
@@ -299,7 +338,7 @@ url
 
 uri
 	= i:[^"]* dot:"." ext:("jpg" / "jpeg" / "gif" / "wrl")
-	{ return i + dot + ext + "BOOOO"; }
+	{ return i + dot + ext; }
 
 quoted_string
 	= ws quote s:[^"]* quote ws
@@ -307,11 +346,6 @@ quoted_string
 
 quote
 	= '"'
-
-/* This is a special case, because in VRML it is allowed to write a float as .66 for example, meaning 0.66 */
-float
-	= int ? frac
-	{ return parseFloat(text()); }
 
 /* ----- Core ABNF Rules ----- */
 
