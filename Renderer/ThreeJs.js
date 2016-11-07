@@ -430,7 +430,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
                     var imageUrl = appearance.texture.url[0];
 
-                    if ( undefined != imageUrl ) {
+                    if ( undefined != imageUrl && imageUrl ) {
                       scope.log('Loading image: ' + imageUrl);
 
                       // @todo: support for repeatS and repeatT
@@ -625,7 +625,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
                     )
                   ]);
                 } else {
-                  scope.log('Missing either uvs or indexes');
+                  //scope.log('Missing either uvs or indexes');
                 }
 
                 skip++;
