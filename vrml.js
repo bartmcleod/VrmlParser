@@ -1773,13 +1773,9 @@ vrmlParser = (function() {
       if (s1 !== peg$FAILED) {
         s2 = [];
         s3 = peg$parseDIGIT();
-        if (s3 !== peg$FAILED) {
-          while (s3 !== peg$FAILED) {
-            s2.push(s3);
-            s3 = peg$parseDIGIT();
-          }
-        } else {
-          s2 = peg$FAILED;
+        while (s3 !== peg$FAILED) {
+          s2.push(s3);
+          s3 = peg$parseDIGIT();
         }
         if (s2 !== peg$FAILED) {
           s1 = [s1, s2];
