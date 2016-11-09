@@ -329,7 +329,7 @@ face
 	{ return points; }
 
 index
-	= i:int (("," " "?) / " "+)
+	= i:int (( ws "," " "?) / " "+)
     { return i }
 
 url
