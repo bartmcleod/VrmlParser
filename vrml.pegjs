@@ -136,7 +136,7 @@ property
     =  orientation / coordIndex / pointArray / generic_property
 
 orientation
-	= ws? name:("orientation" / "rotation") q:quaternion
+	= ws? name:("orientation" / "rotation" / "scaleOrientation") q:quaternion
     { return {name: name, value: q} }
 
 quaternion
