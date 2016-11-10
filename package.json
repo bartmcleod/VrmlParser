@@ -20,7 +20,7 @@
     "three": "*",
     "pegjs-require": "*",
     "tween.js": "*",
-    "fs": "*"
+    "fs": "0.0.2"
   },
   "license": "MIT",
   "homepage": "https://github.com/bartmcleod/VrmlParser#readme",
