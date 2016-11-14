@@ -8,9 +8,12 @@ var fs = require('fs');
 var parser = require('./vrml.pegjs');
 var consoleRenderer = require('./Renderer/Console.js');
 // var vrmlText = fs.readFileSync('./example.wrl', 'utf8');
-//var vrmlText = fs.readFileSync('./SimpleIndexedFaceSet.wrl', 'utf8');
-var vrmlText = fs.readFileSync('./test.wrl', 'utf8');
+// var vrmlText = fs.readFileSync('./SimpleIndexedFaceSet.wrl', 'utf8');
+// var vrmlText = fs.readFileSync('./test.wrl', 'utf8');
 // var vrmlText = fs.readFileSync('./single_vaneyck.wrl', 'utf8');
+// var vrmlText = fs.readFileSync('experiments/tempel.wrl', 'utf8');
+// var vrmlText = fs.readFileSync('experiments/tempel-orig.wrl', 'utf8');
+var vrmlText = fs.readFileSync('experiments/buitmuur.wrl', 'utf8');
 
 try {
   var nodeTree = parser.parse(vrmlText);

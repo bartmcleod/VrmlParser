@@ -4,7 +4,9 @@ I started this project by building on top of my earlier improvements of the sequ
 The actual PEG.js grammar is in `vrml.pegjs`.
 
 ## Installation
-Run `npm install` in the root directory of the project. This means you will have to install NodeJs before you can run this command.
+If you have cloned or downloaded the project from Github, run `npm install` in the root directory of the project. This means you will have to install NodeJs before you can run this command.
+
+Alternatively, you can install it as an npm package directly, without downloading or cloning from Github: `npm install vrmlparser`. Depending on your setup, you may need to use `sudo`.
 
 ## Usage
 The parser is implemented in JavaScript and can be run by node from the command line. An example is added: `vrml-parser.js`. Just run
@@ -123,6 +125,8 @@ Although my first commits did not adhere to any specific coding style, I decided
 already validated by the node community. We should adhere to the coding style as described here: http://nodeguide.com/style.html
 
 ## License
-You are free to use the Grammar any way you like, with the only restriction that you should mention 
+"You are free to use the Grammar any way you like, with the only restriction that you should mention 
 the original author: Bart McLeod. If you do not remove any @copyright and @author annotations you will
-be fine.
+be fine."
+
+The quote above is the license with which I initially started. To make it more formal, I have adopted the MIT license.
