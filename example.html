@@ -59,7 +59,7 @@
 
 <script src="node_modules/three/build/three.js"></script>
 <!--<script src="node_modules/three/build/three.min.js"></script>-->
-<!--
+<!-- use scripts below for development and debugging -->
 <script src="vrml.js"></script>
 <script src="Renderer/ThreeJs.js"></script>
 <script src="Renderer/ThreeJs/Animation.js"></script>
@@ -68,8 +68,11 @@
 <script src="Renderer/ThreeJs/Animation/PositionInterpolator.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/Viewpoint.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/NavigationInfo.js"></script>
--->
+<script src="node_modules/tween.js/src/Tween.js"></script>
+<!-- use the minified version for integration with Three.js and for speed -->
+<!--
 <<script src="vrml.min.js"></script>
+-->
 <script src="node_modules/three/examples/js/renderers/Projector.js"></script>
 <script src="node_modules/three/examples/js/controls/OrbitControls.js"></script>
 <script src="node_modules/three/examples/js/controls/FlyControls.js"></script>
@@ -166,7 +169,6 @@
 		var xhrLoader = new THREE.XHRLoader();
 		// onLoad, onProgress, onError
 		xhrLoader.load('wrl/house.wrl', function (data) {
-//		xhrLoader.load('wrl/CameraTest.wrl', function (data) {
 			try {
 				var tree = vrmlParser.parse(data);
 			} catch ( e ) {
