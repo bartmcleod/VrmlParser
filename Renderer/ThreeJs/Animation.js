@@ -6,11 +6,6 @@
  *
  * Adds animation and interaction support to the VrmlParser.Renderer.ThreeJs
  */
-var VrmlParser = VrmlParser || {};
-
-VrmlParser.Renderer = VrmlParser.Renderer || {};
-
-VrmlParser.Renderer.ThreeJs = VrmlParser.Renderer.ThreeJs || {};
 
 /**
  * Offers support for interaction and animation.
@@ -20,17 +15,11 @@ VrmlParser.Renderer.ThreeJs = VrmlParser.Renderer.ThreeJs || {};
  * Also, in debug mode, a blue line will be drawn from the perspective camera to the clicked point.
  * You can see this line when zooming out after clicking and object.
  *
- * @param scene
- * @param camera
- * @param renderer
  * @param debug
  * @constructor
  */
-VrmlParser.Renderer.ThreeJs.Animation = function (scene, camera, renderer, debug) {
-  // @todo: support for multiple cameras or just re-initialize with a new camera when switched to one?
-  this.camera = camera;
-  this.scene = scene;
-  this.renderer = renderer;
+VrmlParser.Renderer.ThreeJs['Animation'] = function (debug) {
+  // use global camera, scene and renderer ( a weakness, I think )
   this.debug = debug ? true : false;
   this.animations = {};
 };
@@ -79,7 +68,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    * @returns {*}
    */
   getRoutesForEvent: function (name) {
-    var routesRegistry = this.scene.userData.routes;
+    var routesRegistry = scene.userData.routes;
     var routes = routesRegistry[name];
     //this.log('The routes are:');
 
@@ -102,7 +91,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
       return targetRoutes;
     }
 
-    var routesRegistry = this.scene.userData.routes;
+    var routesRegistry = scene.userData.routes;
 
     if ( 'undefined' === typeof routesRegistry[triggerRoute.target.name] ) {
       // this is the leaf route
@@ -181,12 +170,12 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
           return eventName;
         }
 
-        var foundItInChildren
-
-        // recurse
-        if ( foundItInChildren = findSensorinChildrenOf(checkNode, sensorType) ) {
-          return foundItInChildren;
-        }
+        // var foundItInChildren
+        //
+        // // recurse
+        // if ( foundItInChildren = findSensorinChildrenOf(checkNode, sensorType) ) {
+        //   return foundItInChildren;
+        // }
 
       }
 
@@ -238,28 +227,25 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
    * 1. The touchTime of the touch sensor is routed to the time source. We can translate this step, since we have
    * a clock and a click event
    */
-  addClickSupport: function () {
-    // do some POC click support here YOU MAY DEPEND ON THREEJS, BUT NEED TO LOAD THE DEPENDENCIES FROM THE EXAMPLES DIR
-    // THERE IS A CIRCULAR DEPENDENCY, SINCE VRMLLOADER NOW DEPENDS ON VRMLPARSER AND VRMLPARSER EXAMPLES DEPEND ON THREEJS, BUT ONLY THE EXAMPLES
+  addClickSupport: function (camera, renderer) {
+    var localCamera = camera;
+    var localRenderer = renderer;
     // clicking: enable clicking on the screen to interact with objects in the 3D world
     projector = new THREE.Projector();
     var line;
     var scope = this;
 
-    this.renderer.domElement.addEventListener('mousedown', function (event) {
-        var camera = scope.camera;
-        var scene = scope.scene;
-        var renderer = scope.renderer;
-
+    renderer.domElement.addEventListener('mousedown', function (event) {
+        // use global camera, scene and renderer
         var x = event.offsetX == undefined ? event.layerX : event.offsetX;
         var y = event.offsetY == undefined ? event.layerY : event.offsetY;
 
         var vector = new THREE.Vector3();
-        vector.set(( x / renderer.domElement.width ) * 2 - 1, -( y / renderer.domElement.height ) * 2 + 1, 0.5);
+        vector.set(( x / localRenderer.domElement.width ) * 2 - 1, -( y / localRenderer.domElement.height ) * 2 + 1, 0.5);
 
-        vector.unproject(camera);
+        vector.unproject(localCamera);
 
-        var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+        var raycaster = new THREE.Raycaster(localCamera.position, vector.sub(localCamera.position).normalize());
 
         var objects = scene.children;
         var intersects = raycaster.intersectObjects(objects, true);
@@ -298,7 +284,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
           var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
 
           // any supported interpolator will work, for now, only OrientationInterpolator
-          if ( 'undefined' === typeof VrmlParser.Renderer.ThreeJs.Animation[originalNode.node] ) {
+          if ( undefined === VrmlParser.Renderer.ThreeJs.Animation[originalNode.node] ) {
             scope.log(originalNode.node + ' is not yet supported');
             return;
           }

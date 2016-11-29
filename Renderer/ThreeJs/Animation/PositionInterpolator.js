@@ -5,13 +5,7 @@
  * Adds animation and interaction support to the VrmlParser.Renderer.ThreeJs
  * @todo: take time into account
  */
-var VrmlParser = VrmlParser || {};
-
-VrmlParser.Renderer = VrmlParser.Renderer || {};
-
-VrmlParser.Renderer.ThreeJs = VrmlParser.Renderer.ThreeJs || {};
-
-VrmlParser.Renderer.ThreeJs.Animation = VrmlParser.Renderer.ThreeJs.Animation || {};
+// we use below notation to create exports for the Google closure compiler
 
 /**
  * The OrientationInterpolator wraps the essential properties of its original VRML node counterpart
@@ -20,7 +14,7 @@ VrmlParser.Renderer.ThreeJs.Animation = VrmlParser.Renderer.ThreeJs.Animation ||
  * @param originalNode
  * @constructor
  */
-VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator = function (originalNode, debug) {
+VrmlParser.Renderer.ThreeJs.Animation['PositionInterpolator'] = function (originalNode, debug) {
   this.key = originalNode.key;
   this.keyValue = originalNode.keyValue;
   this.debug = debug ? true : false;
@@ -68,7 +62,7 @@ VrmlParser.Renderer.ThreeJs.Animation.PositionInterpolator.prototype = {
       // take next key or finish
       index++;
 
-      if (index >= scope.keyValue.length) {
+      if ( index >= scope.keyValue.length ) {
         console.log('finish');
         // now make the end position of the target exactly the same as p, to correct any rounding errors from tweening
         target.position = p;

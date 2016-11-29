@@ -12,18 +12,17 @@ Alternatively, you can install it as an npm package directly, without downloadin
 The parser is implemented in JavaScript and can be run by node from the command line. An example is added: `vrml-parser.js`. Just run
 `node vrml-parser.js` on the command line to see the experimental output.
 
-To parse a different file, edit `vrml-parser.js` and change the path to the `test.wrl` file that is being loaded, 
-or paste the contents of your VRML file into `test.wrl`.
+To parse a different file, edit `vrml-parser.js` and change the path to the `wrl/test.wrl` file that is being loaded, 
+or paste the contents of your VRML file into `wrl/test.wrl`.
 
-Originally, `test.wrl` contains the same content as the `house.wrl` from the ThreeJs examples, except for
+Originally, `wrl/test.wrl` contains the same content as the `house.wrl` from the ThreeJs examples, except for
 an occasional typo I had to fix to make the parser succeed.
 
 ### How to use the parser in the browser
 
 *For your convenience, a pre-parsed `vrml.js` has been added to the project. It is ready for you to use in a browser. It exposes the vrmlParser global variable as the parser.*
 
-*Also, you may serve the example.html file locally, for example using the built-in webserver that comes with php, to see a working example of the VrmlParser and the ThreeJsRenderer. Currently, it offers no navigation options, so you
-can't walk through.*
+*Also, you may serve the example.html file locally, for example using the built-in webserver that comes with php, to see a working example of the VrmlParser and the ThreeJsRenderer.*
 
 To use the parser in the Browser, you cannot make use of the nodeJs approach, you will have to generate a browser friendly version of the parser. It can be generated using the following command:
 
@@ -32,7 +31,7 @@ pegjs -e vrmlParser vrml.pegjs
 ```
 *See also http://pegjs.org/documentation#generating-a-parser-command-line*
 
-This generates the parser as a JavaScript file, that can be loaded in the html page using a &lt;cript&gt; tag like any other JavaScript file.
+This generates the parser as a JavaScript file, that can be loaded in the html page using a &lt;script&gt; tag like any other JavaScript file.
 
 Note that the options come before the input file name. Running this command will generate the parser in `vrml.js`, which you can then load in the browser. The parser will be available to you as vrmlParser:
 
@@ -91,7 +90,7 @@ Since converting animations is something requested by some, I will focus on conv
 
 To help with converting animations I would like to have some diagnostic information on the objects in 3D. Some sort of editor mode or inspection panel, where I can see which part of the object was clicked.
 
-##Challenge##
+##Challenge
 One of the first challenges encountered, is caused by how I defined animations in the original VRML file dating from 1997. If for example the green arrow on the top left of the first floor of the house was clicked, the first floor and attic would be moved sideways to the right (positive x), revealing the interior of the ground floor. When the corresponding red arrow on the right was clicked, the reverse would happen.
 
 When I wrote the parser, I made the assumption that animated nodes were named and that it would suffice to write the name onto the Object3D instance in the ThreeJs renderer. With a name, the Object3D could then be retrieved and animated, because I also stored all the routes (ROUTE definitions are used to define VRML animations). In reality however, it is not the green arrow from the example that is named, in order to be clickable. In my original VRML file, the green arrow is just a child of a Transform node, which is also not named, but has a named TouchSensor as one of its children. So the TouchSensor actually holds the unique name we need for our animation. The TouchSensor is a sibling of the green arrow Object3D. Now to start animating,

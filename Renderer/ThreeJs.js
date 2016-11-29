@@ -5,11 +5,11 @@
  * @copyright Bart McLeod 2016, mcleod@spaceweb.nl
  * @author Bart McLeod / http://spaceweb.nl/
  */
-var VrmlParser = VrmlParser || {};
+window['VrmlParser'] = {};
 
-VrmlParser.Renderer = VrmlParser.Renderer || {};
+VrmlParser['Renderer'] = {};
 
-VrmlParser.Renderer.ThreeJs = function (debug) {
+VrmlParser.Renderer['ThreeJs'] = function (debug) {
   this.debug = debug ? true : false;
 };
 

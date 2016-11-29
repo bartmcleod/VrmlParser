@@ -5,13 +5,6 @@
  * Adds animation and interaction support to the VrmlParser.Renderer.ThreeJs
  * @todo: take time into account
  */
-var VrmlParser = VrmlParser || {};
-
-VrmlParser.Renderer = VrmlParser.Renderer || {};
-
-VrmlParser.Renderer.ThreeJs = VrmlParser.Renderer.ThreeJs || {};
-
-VrmlParser.Renderer.ThreeJs.Animation = VrmlParser.Renderer.ThreeJs.Animation || {};
 
 /**
  * The OrientationInterpolator wraps the essential properties of its original VRML node counterpart
@@ -20,7 +13,7 @@ VrmlParser.Renderer.ThreeJs.Animation = VrmlParser.Renderer.ThreeJs.Animation ||
  * @param originalNode
  * @constructor
  */
-VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator = function (originalNode, debug) {
+VrmlParser.Renderer.ThreeJs.Animation['OrientationInterpolator'] = function (originalNode, debug) {
   this.key = originalNode.key;
   this.keyValue = originalNode.keyValue;
   this.debug = debug ? true : false;
@@ -64,7 +57,7 @@ VrmlParser.Renderer.ThreeJs.Animation.OrientationInterpolator.prototype = {
     //this.log('tweening for ' + this.index);
     var r = this.keyValue[this.index];
     var endRadians = r.radians;
-    this.log('Animating from '+ this.target.rotation.y +' to ' + endRadians);
+    this.log('Animating from ' + this.target.rotation.y + ' to ' + endRadians);
     var endQuaternion = new THREE.Quaternion();
     var vector3 = new THREE.Vector3(r.x, r.y, r.z);
     endQuaternion.setFromAxisAngle(vector3, endRadians);

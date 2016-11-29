@@ -48174,7 +48174,7 @@ DEF lightCond_hl Script {
                                                                               
 ##### Group of views using solar illumination  during DI and Stardust NExT    
                                                                               
-Group {  children [                                                           
+Group {  children [
   Transform { rotation  427.626   -3074.306   -2523.050  0.6 children [       
     DEF LT_DIAPP ProximitySensor {                                            
       center       427.626   -3074.306   -2523.050                            

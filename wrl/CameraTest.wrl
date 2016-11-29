@@ -1,0 +1,49 @@
+#VRML V2.0 utf8
+
+Viewpoint {
+    fieldOfView    1
+    jump           TRUE
+    orientation    1 0 0  0
+    position       0 2 8
+
+    description    "Viewpoint 1"
+}
+
+Viewpoint {
+    fieldOfView    1
+    jump           TRUE
+    orientation    1 0 0  0
+    position       -12 2 8
+
+    description    "Viewpoint 2"
+}
+
+Group {
+    children [
+
+        Transform {
+            # a comment about the transform node
+            children [
+                Shape {
+                    appearance Appearance {
+                        material Material {
+                          diffuseColor 1.0 1. 1.
+                          specularColor 0. 0. 0.
+                          emissiveColor 0.1 0.1 0.1
+                          ambientIntensity 1.
+                          shininess  0.
+                          transparency 0.0
+                        }
+                    }
+                    geometry Box {
+                        size    1 1 1
+                    }
+                }
+            ]
+            rotation 0.4 0.2 0.1 0
+            translation -6 2 0
+            scale 4 4 4
+        }
+    ]
+}
+#the comment at the vrml root level
