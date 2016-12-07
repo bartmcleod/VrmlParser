@@ -284,12 +284,12 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
           var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
 
           // any supported interpolator will work, for now, only OrientationInterpolator
-          if ( undefined === VrmlParser.Renderer.ThreeJs.Animation[originalNode.node] ) {
+          if ( undefined === VrmlParser.Renderer.ThreeJs.VrmlNode[originalNode.node] ) {
             scope.log(originalNode.node + ' is not yet supported');
             return;
           }
 
-          var interpolator = new VrmlParser.Renderer.ThreeJs.Animation[originalNode.node](originalNode, scope.debug);
+          var interpolator = new VrmlParser.Renderer.ThreeJs.VrmlNode[originalNode.node](originalNode, scope.debug);
 
           var name = 'surrounding_' + targetRoute.target.name;
           var target = scene.getObjectByName(name);

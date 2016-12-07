@@ -219,6 +219,12 @@ VrmlParser.Renderer.ThreeJs.prototype = {
       var surroundingGroup = false;
       // @todo: WIP refactor the switch to a class name with parse method for each node: parse(writer, node)
       switch ( node.node ) {
+        case 'DirectionalLight':
+          object = false;
+          var directionalLight = new VrmlParser.Renderer.ThreeJs.VrmlNode.DirectionalLight(node, scope.debug);
+          directionalLight.parse(scene, camera);
+          break;
+
         case 'NavigationInfo':
           // no object needed, NavigationInfo initializes controls in the scene
           object = false;
