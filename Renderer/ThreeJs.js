@@ -14,6 +14,7 @@ VrmlParser.Renderer['ThreeJs'] = function (debug) {
 };
 
 VrmlParser.Renderer.ThreeJs.prototype = {
+  viewpoints: {},
   debug: false,
   REVISION: 1,
   constructor: VrmlParser.Renderer.ThreeJs,
@@ -219,6 +220,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
       var surroundingGroup = false;
       // @todo: WIP refactor the switch to a class name with parse method for each node: parse(writer, node)
       switch ( node.node ) {
+        case 'PointLight':
+          var pointLight = new VrmlParser.Renderer.ThreeJs.VrmlNode.PointLight(node, scope.debug);
+					object = pointLight.parse();
+          break;
+
         case 'DirectionalLight':
           object = false;
           var directionalLight = new VrmlParser.Renderer.ThreeJs.VrmlNode.DirectionalLight(node, scope.debug);
@@ -229,11 +235,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           // no object needed, NavigationInfo initializes controls in the scene
           object = false;
           var navigationInfo = new VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo(node, scope.debug);
-          navigationInfo.parse(scene);
+          navigationInfo.parse(scene, camera);
           break;
 
         case 'Viewpoint':
-          //scope.log('Got a Viewpoint named ' + (node.name ? node.name : node.description));
+          scope.log('Got a Viewpoint named ' + (node.name ? node.name : node.description));
           var viewpoint = new VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint(node, scope.debug);
           surroundingGroup = viewpoint.parse(scene);
           // store the group with the camera in the list of cameras, by its name

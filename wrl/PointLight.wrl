@@ -1,0 +1,48 @@
+#VRML V2.0 utf8
+
+Transform {
+    # a box close to the point light
+    children [
+
+        Shape {
+            appearance Appearance {
+                material Material {
+                  diffuseColor 1 1 1
+                }
+            }
+            geometry Box {
+                size    1 1 1
+            }
+        }
+    ]
+    rotation 0.4 0.2 0.1 0.8
+    translation -6 2 0
+}
+
+Transform {
+    # a box far further away from the point light
+    children [
+
+        Shape {
+            appearance Appearance {
+                material Material {
+                  diffuseColor 1 1 1
+                }
+            }
+            geometry Box {
+                size    1 1 1
+            }
+        }
+    ]
+    rotation 0.4 0.2 0.1 2
+    translation 0 2 -9
+}
+
+PointLight {
+    ambientIntensity  0
+    color             1 1 0
+    intensity         1
+    radius            15
+}
+
+
