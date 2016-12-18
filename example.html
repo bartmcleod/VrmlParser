@@ -86,7 +86,9 @@
 
 	var container;
 
-	var camera, controls, scene, renderer, cameraTween, newCameraQuaternion, rotationDelta = 0;
+	var camera, controls, scene, renderer;
+	//	These variables are used for animating viewpoints, but not in use until interferance with controls has been solved
+	//	var cameraTween, newCameraQuaternion, rotationDelta = 0;
 
 	var animation;
 
@@ -115,6 +117,11 @@
 		camera.position.set(v.x, v.y, v.z);
 		var vector3 = new THREE.Vector3(o.x, o.y, o.z);
 		camera.quaternion.setFromAxisAngle(vector3, o.radians);
+		camera.aspect = c.aspect;
+		camera.near = c.near;
+		camera.far = c.far;
+		camera.fov = c.fov;
+		camera.updateProjectionMatrix();
 
 		// now animate the camera to the position and rotation of the new camera
 //      Disabled until I find a way not to let it interfere with controls
@@ -167,7 +174,11 @@
 						// these are just some properties of the default camera the scene was initialized with
 						position: { x: 0, y: 3, z: 4 },
 						name: 'reset',
-						orientation: { x: 0, y: 1, z: 0, radians: 0 }
+						orientation: { x: 0, y: 1, z: 0, radians: 0 },
+						fov: 60,
+						aspect: window.innerWidth / window.innerHeight,
+						near: 0.01,
+						far: 1e5
 					}
 				}
 			}

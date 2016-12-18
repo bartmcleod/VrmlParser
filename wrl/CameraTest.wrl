@@ -1,7 +1,7 @@
 #VRML V2.0 utf8
 
 Viewpoint {
-    fieldOfView    1
+    fieldOfView    0.5
     jump           TRUE
     orientation    0 1 0  0.6
     position       12 2 40
@@ -10,9 +10,9 @@ Viewpoint {
 }
 
 Viewpoint {
-    fieldOfView    1
+    fieldOfView    2
     jump           TRUE
-    orientation    0 1 0  -0.6
+    orientation    0 1 0  0.6
     position       12 2 40
 
     description    "Viewpoint 2"
