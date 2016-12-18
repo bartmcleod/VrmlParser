@@ -11,35 +11,49 @@ VrmlParser.Renderer.ThreeJs.VrmlNode[ 'Viewpoint' ] = function (originalNode, de
 }
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint.prototype.parse = function (scene) {
-	var fov, aspect, near, far;
-	fov    = Math.round(180 / Math.PI * this.node.fieldOfView);
-	aspect = window.innerWidth / window.innerHeight;
-	near   = 0.01;
-	far    = 1e5;
+	// var fov, aspect, near, far;
+	// fov    = Math.round(180 / Math.PI * this.node.fieldOfView);
+	// aspect = window.innerWidth / window.innerHeight;
+	// near   = 0.01;
+	// far    = 1e5;
+	//
+	// // @todo: support for jump (bool)
+	//
+	// var camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+	//
+	// var surroundingGroup = new THREE.Group();
+	// surroundingGroup.add(camera);
+	//
+	// if ( this.node.has('name') ) {
+	// 	camera.name = this.node.name;
+	// } else {
+	// 	camera.name = this.node.description;
+	// }
+	//
+	// surroundingGroup.getCamera = function () {
+	// 	return this.children[ 0 ];
+	// }
+	//
+	// var p = this.node.position;
+	// surroundingGroup.position.set(p.x, p.y, p.z);
+	//
+	// var o       = this.node.orientation;
+	// var vector3 = new THREE.Vector3(o.x, o.y, o.z);
+	// surroundingGroup.quaternion.setFromAxisAngle(vector3, o.radians);
 
-	// @todo: support for jump (bool)
+	var node = this.node;
 
-	var camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+	var viewPointName           = node.name ? node.name : node.description
 
-	var surroundingGroup = new THREE.Group();
-	surroundingGroup.add(camera);
+	return {
+		getCamera: function(){
+			return {
+				name: viewPointName,
+				position: node.position,
+				orientation: node.orientation
+			}
+		}
+	};
 
-	if ( this.node.has('name') ) {
-		camera.name = this.node.name;
-	} else {
-		camera.name = this.node.description;
-	}
-
-	surroundingGroup.getCamera = function () {
-		return this.children[ 0 ];
-	}
-
-	var p = this.node.position;
-	surroundingGroup.position.set(p.x, p.y, p.z);
-
-	var o       = this.node.orientation;
-	var vector3 = new THREE.Vector3(o.x, o.y, o.z);
-	surroundingGroup.quaternion.setFromAxisAngle(vector3, o.radians);
-
-	return surroundingGroup;
+	//return surroundingGroup;
 };

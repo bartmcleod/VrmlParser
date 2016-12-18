@@ -3,8 +3,8 @@
 Viewpoint {
     fieldOfView    1
     jump           TRUE
-    orientation    1 0 0  0
-    position       0 2 8
+    orientation    0 1 0  0.6
+    position       12 2 40
 
     description    "Viewpoint 1"
 }
@@ -12,10 +12,25 @@ Viewpoint {
 Viewpoint {
     fieldOfView    1
     jump           TRUE
-    orientation    1 0 0  0
-    position       -12 2 8
+    orientation    0 1 0  -0.6
+    position       12 2 40
 
     description    "Viewpoint 2"
+}
+
+
+DirectionalLight {
+    ambientIntensity  0
+    color             1 0 1
+    intensity         1
+    direction         0.5 0.5 -0.5
+}
+
+DirectionalLight {
+    ambientIntensity  0
+    color             1 1 0
+    intensity         1
+    direction         1 1 1
 }
 
 Group {
@@ -24,7 +39,7 @@ Group {
         Transform {
             # a comment about the transform node
             children [
-                Shape {
+                DEF aBox Shape {
                     appearance Appearance {
                         material Material {
                           diffuseColor 1.0 1. 1.
@@ -41,8 +56,58 @@ Group {
                 }
             ]
             rotation 0.4 0.2 0.1 0
-            translation -6 2 0
-            scale 4 4 4
+            translation -6 2 -10
+            scale 1 1 1
+        }
+
+        Transform {
+            children[
+                USE aBox
+            ]
+            rotation 0.6 0.4 1 2
+            translation 6 2 -10
+            scale 1 1 1
+        }
+
+        Transform {
+            children[
+                USE aBox
+            ]
+            rotation 0.6 0.4 1 1
+            translation 3 2 -10
+            scale 1 1 1
+        }
+
+        Transform {
+            children[
+                USE aBox
+            ]
+            rotation 0.6 0.4 1 3
+            translation -3 2 -10
+            scale 1 1 1
+        }
+
+        Transform {
+            children[
+                USE aBox
+            ]
+            rotation 0.6 1 1 1.5
+            translation 0 2 -4
+            scale 1 1 1
+        }
+
+        Transform {
+            children[
+                USE aBox
+            ]
+            translation 0 0 12
+        }
+
+        Transform {
+            children[
+                USE aBox
+            ]
+            translation 0 0 -24
         }
     ]
 }

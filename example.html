@@ -86,7 +86,7 @@
 
 	var container;
 
-	var camera, controls, scene, renderer;
+	var camera, controls, scene, renderer, cameraTween, newCameraQuaternion, rotationDelta = 0;
 
 	var animation;
 
@@ -97,7 +97,7 @@
 	animate();
 
 	function resetControls() {
-		controls             = new THREE.FlyControls(camera);
+		controls             = new THREE.OrbitControls(camera);
 		controls.rotateSpeed = 1;
 		controls.zoomSpeed   = 0.2;
 		controls.panSpeed    = 0.2;
@@ -108,9 +108,27 @@
 	function selectViewpoint(event, vrmlConverter) {
 		var viewpoint = event.target.dataset.name;
 		console.log('clicked ' + viewpoint);
-		camera = vrmlConverter.viewpoints[ viewpoint ].getCamera();
-		resetControls();
-        animation.addClickSupport(camera, renderer);
+		var c = vrmlConverter.viewpoints[ viewpoint ].getCamera();
+		var v = c.position;
+		var o = c.orientation;
+
+		camera.position.set(v.x, v.y, v.z);
+		var vector3 = new THREE.Vector3(o.x, o.y, o.z);
+		camera.quaternion.setFromAxisAngle(vector3, o.radians);
+
+		// now animate the camera to the position and rotation of the new camera
+//      Disabled until I find a way not to let it interfere with controls
+//		var newPosition = new THREE.Vector3(v.x, v.y, v.z);
+//        cameraTween       = new TWEEN.Tween(camera.position)
+//				.to(newPosition)
+//				.start(+ new Date())
+//			;
+//
+//
+//        var vector3 = new THREE.Vector3(o.x, o.y, o.z);
+//        newCameraQuaternion = new THREE.Quaternion();
+//        newCameraQuaternion.setFromAxisAngle(vector3, o.radians);
+
 	}
 
 	function init() {
@@ -143,17 +161,22 @@
 
 		// initialize the viewpoinst with the camera from the global scope
 		vrmlConverter.viewpoints = {
-			reset: {
+			'reset': {
 				getCamera: function () {
-					return this.camera;
-				}, name: 'surrounding_reset', camera: camera
+					return {
+						// these are just some properties of the default camera the scene was initialized with
+						position: { x: 0, y: 3, z: 4 },
+						name: 'reset',
+						orientation: { x: 0, y: 1, z: 0, radians: 0 }
+					}
+				}
 			}
 		}; // key value store of cameras based on VRML viewpoint nodes, stored by their name.
 
 		// VRML parser example:
 		var xhrLoader = new THREE.XHRLoader();
 		// onLoad, onProgress, onError
-		xhrLoader.load('wrl/PointLight.wrl', function (data) {
+		xhrLoader.load('wrl/house.wrl', function (data) {
 			try {
 				var tree = vrmlParser.parse(data);
 			} catch ( e ) {
@@ -172,6 +195,7 @@
 
 			// @todo: move viewpointSelector to its own class
 			var viewpointSelector = document.getElementById('viewpoints');
+			console.log(vrmlConverter.viewpoints);
 
 			for ( a in vrmlConverter.viewpoints ) {
 				if ( typeof a === 'string' ) {
@@ -216,6 +240,24 @@
 		if ( undefined !== controls ) {
 			controls.update(delta);
 		}
+		// @todo: these animations are quite nice, but they get in the way of controls
+		// because they continue to update the camera position
+		// so you should probably register and deregister the animation on viewpoint change
+		// and tween / slerp complete
+		// animate camera position on viewpoint change
+// disabled until I find a way to not have it interfere with controls
+//		if (cameraTween) {
+//			cameraTween.update(+ new Date());
+//        }
+		// animate camera rotation on viewpoint change
+//        if (newCameraQuaternion) {
+//          rotationDelta = (rotationDelta + 8e-3) % 1;
+//          camera.quaternion.slerp(newCameraQuaternion, rotationDelta);
+//          if (rotationDelta >= 1) {
+//          	newCameraQuaternion = null;
+//          	rotationDelta = 0;
+//          }
+//        }
 		animation.update(delta);
 		renderer.render(scene, camera);
 	}

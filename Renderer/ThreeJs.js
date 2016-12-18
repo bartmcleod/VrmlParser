@@ -239,12 +239,14 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           break;
 
         case 'Viewpoint':
-          scope.log('Got a Viewpoint named ' + (node.name ? node.name : node.description));
+          object = false;
+					var viewPointName           = node.name ? node.name : node.description;
+					scope.log('Got a Viewpoint named ' + (viewPointName));
           var viewpoint = new VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint(node, scope.debug);
-          surroundingGroup = viewpoint.parse(scene);
+          // surroundingGroup = viewpoint.parse(scene);
           // store the group with the camera in the list of cameras, by its name
-          object = surroundingGroup.getCamera();
-          scope.viewpoints[object.name] = surroundingGroup;
+          //object = surroundingGroup.getCamera();
+          scope.viewpoints[viewPointName] = viewpoint.parse(scene);
           break;
 
         case 'OrientationInterpolator':
