@@ -747,7 +747,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
         case 'TouchSensor':
           // just explicitly keep the object (by not setting it to false), do nothing else
           if ( scope.debug ) {
-            // in debug mode, add a ten x ten cm cube to indicate the presence of a touchsensor
+            // in debug mode, add a ten x ten x ten cm cube to indicate the presence of a touchsensor
             // @todo: register this with a legenda
             object = new THREE.Mesh();
             object.geometry = new THREE.CubeGeometry(0.1, 0.1, 0.1);
@@ -793,10 +793,10 @@ VrmlParser.Renderer.ThreeJs.prototype = {
     }
 
     scene.userData.routes = nodeTree.routes;
-    console.log(scene);
+    scope.log(scene);
 
     // @todo: parse nodeTree.nodeDefinitions
 
-  },
+  }
 
 };

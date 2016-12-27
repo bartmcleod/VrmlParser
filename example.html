@@ -164,6 +164,7 @@
 
 		// add support for animation and interaction
 		animation = new VrmlParser.Renderer.ThreeJs.Animation(debug);
+
 		animation.addClickSupport(camera, renderer);
 
 		// initialize the viewpoinst with the camera from the global scope
@@ -203,6 +204,8 @@
 			console.log(tree);
 
 			vrmlConverter.render(tree, scene);
+			// once the scene is rendered in threejs, a registry of mesh objects that responed to sensors can be build
+            animation.buildSensorRegistry(scene);
 
 			// @todo: move viewpointSelector to its own class
 			var viewpointSelector = document.getElementById('viewpoints');
