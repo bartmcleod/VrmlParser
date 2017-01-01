@@ -115,6 +115,10 @@
 		var o = c.orientation;
 
 		camera.position.set(v.x, v.y, v.z);
+
+		// fake the name of a surrounding group for the camera, so that it can be animated as any other object.
+		camera.name = 'surrounding_' + viewpoint;
+
 		var vector3 = new THREE.Vector3(o.x, o.y, o.z);
 		camera.quaternion.setFromAxisAngle(vector3, o.radians);
 		camera.aspect = c.aspect;
@@ -188,7 +192,7 @@
 		// VRML parser example:
 		var xhrLoader = new THREE.XHRLoader();
 		// onLoad, onProgress, onError
-		xhrLoader.load('wrl/house.wrl', function (data) {
+		xhrLoader.load('wrl/vaneyck.wrl', function (data) {
 			try {
 				var tree = vrmlParser.parse(data);
 			} catch ( e ) {

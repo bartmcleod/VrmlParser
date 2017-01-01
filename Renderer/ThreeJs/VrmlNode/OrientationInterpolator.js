@@ -43,6 +43,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype.tween = f
 	//this.log('tweening for ' + this.index);
 	var r          = this.keyValue[ this.index ];
 	var endRadians = r.radians;
+	//this.log(this);
 	this.log('Animating from ' + this.target.rotation.y + ' to ' + endRadians);
 	var endQuaternion = new THREE.Quaternion();
 	var vector3       = new THREE.Vector3(r.x, r.y, r.z);

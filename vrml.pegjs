@@ -52,7 +52,7 @@ OrientationInterpolator
     }
 
 keyValueForOrientationInterpolator
-    = ws? "keyValue" begin_array quaternionArray:( q:(q:quaternion value_separator {return q;})* last_q:quaternion {q.push(last_q); return q; } ) end_array
+    = ws? "keyValue" begin_array quaternionArray:( q:(q:quaternion value_separator comment? {return q;})* lq:quaternion? comment? {if(lq)q.push(lq);return q;} ) end_array
     {
         return {name: "keyValue", value: quaternionArray};
     }

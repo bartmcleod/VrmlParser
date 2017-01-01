@@ -41,7 +41,6 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 	 * 	'PlaneSensor' : { 'MyPlaneSensor1' : [ 'etc'] }
 	  * }
 	 *
-	 * @todo: find out why it misses certain sensors such as 'schuifboven' from the house.wrl example
 	 */
 	buildSensorRegistry: function (scene) {
 		var scope = this;
@@ -368,10 +367,11 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 						// work on a clone [slice(0)] of the routes, otherwise, using pop() will make the array useless for next time
 						var routes = scope.getRoutesForEvent(touch).slice(0);
 
+						// @todo: make less naive, express intention in better comments
 						// naive, only use first
 						var targetRoutes = scope.findTargetRoutes(routes.pop());
 
-						// again, naive (good usecase for map reduce?
+						// again, naive
 						var targetRoute = targetRoutes;
 
 						while ( 'function' === typeof targetRoute.pop ) {
@@ -388,7 +388,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 
 						var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
 
-						// any supported interpolator will work, for now, only OrientationInterpolator
+						// any supported interpolator will work, for now, only OrientationInterpolator and PositionInterpolator
 						if ( undefined === VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ] ) {
 							scope.log(originalNode.node + ' is not yet supported');
 							return;

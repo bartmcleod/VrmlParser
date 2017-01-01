@@ -51,7 +51,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.PositionInterpolator.prototype.getCallback 
 		index ++;
 
 		if ( index >= scope.keyValue.length ) {
-			console.log('finish');
+			scope.log('finish');
 			// now make the end position of the target exactly the same as p, to correct any rounding errors from tweening
 			target.position = p;
 			finish();

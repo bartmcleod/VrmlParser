@@ -59,7 +59,7 @@ vrmlParser = (function() {
         peg$c7 = "keyValue",
         peg$c8 = { type: "literal", value: "keyValue", description: "\"keyValue\"" },
         peg$c9 = function(q) {return q;},
-        peg$c10 = function(q, last_q) {q.push(last_q); return q; },
+        peg$c10 = function(q, lq) {if(lq)q.push(lq);return q;},
         peg$c11 = function(quaternionArray) {
                 return {name: "keyValue", value: quaternionArray};
             },
@@ -626,7 +626,7 @@ vrmlParser = (function() {
     }
 
     function peg$parsekeyValueForOrientationInterpolator() {
-      var s0, s1, s2, s3, s4, s5, s6, s7, s8;
+      var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9;
 
       s0 = peg$currPos;
       s1 = peg$parsews();
@@ -651,9 +651,18 @@ vrmlParser = (function() {
             if (s7 !== peg$FAILED) {
               s8 = peg$parsevalue_separator();
               if (s8 !== peg$FAILED) {
-                peg$savedPos = s6;
-                s7 = peg$c9(s7);
-                s6 = s7;
+                s9 = peg$parsecomment();
+                if (s9 === peg$FAILED) {
+                  s9 = null;
+                }
+                if (s9 !== peg$FAILED) {
+                  peg$savedPos = s6;
+                  s7 = peg$c9(s7);
+                  s6 = s7;
+                } else {
+                  peg$currPos = s6;
+                  s6 = peg$FAILED;
+                }
               } else {
                 peg$currPos = s6;
                 s6 = peg$FAILED;
@@ -669,9 +678,18 @@ vrmlParser = (function() {
               if (s7 !== peg$FAILED) {
                 s8 = peg$parsevalue_separator();
                 if (s8 !== peg$FAILED) {
-                  peg$savedPos = s6;
-                  s7 = peg$c9(s7);
-                  s6 = s7;
+                  s9 = peg$parsecomment();
+                  if (s9 === peg$FAILED) {
+                    s9 = null;
+                  }
+                  if (s9 !== peg$FAILED) {
+                    peg$savedPos = s6;
+                    s7 = peg$c9(s7);
+                    s6 = s7;
+                  } else {
+                    peg$currPos = s6;
+                    s6 = peg$FAILED;
+                  }
                 } else {
                   peg$currPos = s6;
                   s6 = peg$FAILED;
@@ -683,10 +701,22 @@ vrmlParser = (function() {
             }
             if (s5 !== peg$FAILED) {
               s6 = peg$parsequaternion();
+              if (s6 === peg$FAILED) {
+                s6 = null;
+              }
               if (s6 !== peg$FAILED) {
-                peg$savedPos = s4;
-                s5 = peg$c10(s5, s6);
-                s4 = s5;
+                s7 = peg$parsecomment();
+                if (s7 === peg$FAILED) {
+                  s7 = null;
+                }
+                if (s7 !== peg$FAILED) {
+                  peg$savedPos = s4;
+                  s5 = peg$c10(s5, s6);
+                  s4 = s5;
+                } else {
+                  peg$currPos = s4;
+                  s4 = peg$FAILED;
+                }
               } else {
                 peg$currPos = s4;
                 s4 = peg$FAILED;
