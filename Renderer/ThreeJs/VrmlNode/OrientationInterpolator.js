@@ -14,29 +14,10 @@
  * @constructor
  */
 VrmlParser.Renderer.ThreeJs.VrmlNode[ 'OrientationInterpolator' ] = function (originalNode, debug) {
-	// inherit from VrmlNode
-	VrmlParser.Renderer.ThreeJs.VrmlNode.apply(this, arguments);
-	this.key      = originalNode.key;
-	this.keyValue = originalNode.keyValue;
-	// assumption that the object is already at keyValue[0], so start rotating toward keyValue[1]
-	this.index    = 1;
-	this.finish   = null;
-	this.target   = null;
-	this.tweenObj = null;
+	VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.call(this, originalNode, debug);
 }
 
-VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype.complete = function () {
-	// take next key or finish
-	this.index ++;
-
-	if ( this.index >= this.keyValue.length ) {
-		this.log('finish at index ' + this.index);
-		this.finish();
-		return;
-	}
-
-	this.tween();
-}
+VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype = Object.create(VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.prototype);
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype.tween = function () {
 	var scope      = this;
@@ -44,7 +25,8 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype.tween = f
 	var r          = this.keyValue[ this.index ];
 	var endRadians = r.radians;
 	//this.log(this);
-	this.log('Animating from ' + this.target.rotation.y + ' to ' + endRadians);
+	var from       = this.target.quaternion !== undefined ? this.target.quaternion.w : this.target.rotation.w;
+	this.log('Animating from ' + from + ' to ' + endRadians);
 	var endQuaternion = new THREE.Quaternion();
 	var vector3       = new THREE.Vector3(r.x, r.y, r.z);
 	endQuaternion.setFromAxisAngle(vector3, endRadians);
@@ -56,35 +38,4 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype.tween = f
 	.onComplete(function () {
 		scope.complete();
 	});
-	;
-}
-
-/**
- * Gets the animation callback method, which can play the animation associated with this OrientationInterpolator.
- * @param Object3D target
- * @param callable finish A method that will be called when the callback is ready to be removed
- */
-VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype.getCallback = function (target, finish) {
-	var scope = this;
-
-	// what to animate:
-	this.target = target;
-
-	// what to do after completion
-	this.finish = finish;
-
-	// trigger the animation
-	this.tween();
-
-	/**
-	 * The animation callback
-	 *
-	 * @param float delta time difference
-	 * @param callable finish will be called by the callback when it is ready to be removed
-	 */
-	var callback = function (delta) {
-		scope.tweenObj.update(+ new Date());
-	};
-
-	return callback;
 }

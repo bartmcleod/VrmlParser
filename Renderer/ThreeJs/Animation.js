@@ -72,7 +72,9 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 
 				// check this node
 				if ( 'undefined' !== typeof checkNode.userData.originalVrmlNode
-					&& sensorType === checkNode.userData.originalVrmlNode.node ) {
+					&& sensorType === checkNode.userData.originalVrmlNode.node
+					&& checkNode.userData.originalVrmlNode.enabled !== false
+				) {
 					// find the first route, we only use TimeSensor to get from one to the next
 					eventName = checkNode.name;
 					scope.log(sensorType + ': ' + eventName);
@@ -111,8 +113,8 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 
 				// recurse
 				if ( object.children !== undefined ) {
-					for ( var j = 0; j < object.children.length; j++) {
-						_findGeometriesAffectedBySensor(object.children[j], name);
+					for ( var j = 0; j < object.children.length; j ++ ) {
+						_findGeometriesAffectedBySensor(object.children[ j ], name);
 					}
 				}
 
@@ -181,9 +183,11 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 	 */
 	update: function (delta) {
 		for ( var a in this.animations ) {
+
 			if ( ! this.animations.hasOwnProperty(a) ) {
 				continue;
 			}
+
 			var callback = this.animations[ a ];
 			callback(delta);
 		}
@@ -203,9 +207,18 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 	/**
 	 * Unregister a callback for the animations.
 	 * @param name
+	 * @return boolean true on successful removal
 	 */
 	removeAnimation: function (name) {
+
+		if ( this.animations[ name ] === undefined ) {
+			this.log('Animation ' + name + ' cannot be removed (missing)');
+			return false;
+		}
+
+		this.log('Deleting animation ' + name);
 		delete this.animations[ name ];
+		return true;
 	},
 
 	/**
@@ -219,11 +232,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 	getRoutesForEvent: function (name) {
 		var routesRegistry = scene.userData.routes;
 		var routes         = routesRegistry[ name ];
-		this.log('The routes are:');
-
-		for ( var r = 0; r < routes.length; r ++ ) {
-			this.log(routes[ r ]);
-		}
+		this.log(routes, 'routes');
 		return routes;
 	},
 
@@ -270,8 +279,14 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 	 * Utility to easily switch logging on and off with the debug flag.
 	 * @param obj
 	 */
-	log: function (obj) {
+	log: function (obj, label) {
+
 		if ( this.debug ) {
+
+			if ( undefined !== label ) {
+				console.log(label + ':');
+			}
+
 			console.log(obj);
 		}
 	},
@@ -354,59 +369,61 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 					var firstIntersect = intersects[ 0 ].object;
 
 					var touches = scope.findSensors(firstIntersect, 'TouchSensor');
-					//scope.log(touches);
 
-					for ( var t = 0; t < touches.length; t ++ ) {
-						var touch = touches[ t ];
-
-						if ( touch.length === 0 ) {
-							// no touch sensor found
-							return;
+					for ( var a in touches ) {
+						if ( ! touches.hasOwnProperty(a) ) {
+							continue;
 						}
 
-						// work on a clone [slice(0)] of the routes, otherwise, using pop() will make the array useless for next time
-						var routes = scope.getRoutesForEvent(touch).slice(0);
+						var touch = touches[ a ];
 
-						// @todo: make less naive, express intention in better comments
-						// naive, only use first
-						var targetRoutes = scope.findTargetRoutes(routes.pop());
+						var routes = scope.getRoutesForEvent(touch);
 
-						// again, naive
-						var targetRoute = targetRoutes;
+						for ( var i = 0; i < routes.length; i ++ ) {
 
-						while ( 'function' === typeof targetRoute.pop ) {
-							targetRoute = targetRoute.pop();
+							var targetRoutes = scope.findTargetRoutes(routes[ i ]);
+							scope.log(targetRoutes, 'targetRoutes');
 
-							if ( 'undefined' === typeof targetRoute ) {
-								scope.log('no target route found for ' + touch);
-								return;
+							for ( var j = 0; j < targetRoutes.length; j ++ ) {
+								var targetRoute = targetRoutes[ j ];
+
+								//find leaf route, because we skip intermediate routes for now
+								while ( 'function' === typeof targetRoute.pop ) {
+									targetRoute = targetRoute.pop();
+
+									if ( 'undefined' === typeof targetRoute ) {
+										scope.log('no target route found for ' + touch);
+										return;
+									}
+								}
+
+								var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
+
+								// any supported interpolator will work, for now, only OrientationInterpolator and PositionInterpolator
+								if ( undefined === VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ] ) {
+									scope.log(originalNode.node + ' is not yet supported');
+									return;
+								}
+
+								var interpolator = new VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ](originalNode, scope.debug);
+								scope.log(interpolator, originalNode.node);
+								var name   = 'surrounding_' + targetRoute.target.name;
+								var target = scene.getObjectByName(name);
+
+								// cleanup method for when the callback wants to be removed because it's done.
+								var finish = function (touch) {
+									return function() {
+										return scope.removeAnimation(touch);
+									}
+								}(touch); // capture touch in function scope, otherwise always last touch will be used
+
+								var callback = interpolator.getCallback(target, finish);
+
+								scope.addAnimation(touch, callback);
 							}
 						}
-
-						// we found the leaf targetRoute
-						scope.log(targetRoute);
-
-						var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
-
-						// any supported interpolator will work, for now, only OrientationInterpolator and PositionInterpolator
-						if ( undefined === VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ] ) {
-							scope.log(originalNode.node + ' is not yet supported');
-							return;
-						}
-
-						var interpolator = new VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ](originalNode, scope.debug);
-
-						var name   = 'surrounding_' + targetRoute.target.name;
-						var target = scene.getObjectByName(name);
-
-						// cleanup method for when the callback wants to be removed because it's done.
-						var finish = function () {
-							scope.removeAnimation(touch);
-						};
-
-						var callback = interpolator.getCallback(target, finish);
-						scope.addAnimation(touch, callback);
 					}
+
 				}
 
 				// drawing a line for diagnostic purposes.
