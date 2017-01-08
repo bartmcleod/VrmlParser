@@ -176,6 +176,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 		this.log(this.sensorRegistry);
 		this.log('DONE building sensor registry');
 	},
+
 	/**
 	 * Updates or registered animations with a delta from the global clock.
 	 *
@@ -222,62 +223,9 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 	},
 
 	/**
-	 * Gets all routes that were registered for a sensor in the original VRML world.
-	 *
-	 * Returned routes have a source and target object. Each have a name and event property.
-	 *
-	 * @param string name Name of the source node of the event.
-	 * @returns {*}
-	 */
-	getRoutesForEvent: function (name) {
-		var routesRegistry = scene.userData.routes;
-		var routes         = routesRegistry[ name ];
-		this.log(routes, 'routes');
-		return routes;
-	},
-
-	/**
-	 * Recursively finds all targetroutes for a given route.
-	 *
-	 * @param triggerRoute
-	 * @returns {boolean}
-	 */
-	findTargetRoutes: function (triggerRoute) {
-		var targetRoutes = [];
-
-		if ( 'undefined' === typeof triggerRoute ) {
-			return targetRoutes;
-		}
-
-		var routesRegistry = scene.userData.routes;
-
-		if ( 'undefined' === typeof routesRegistry[ triggerRoute.target.name ] ) {
-			// this is the leaf route
-			return triggerRoute;
-		}
-
-		// 1. Find first level of targetRoutes (they can be chained)
-		var routes = routesRegistry[ triggerRoute.target.name ];
-
-		// find all the target routes of intermediate routes
-		for ( var i = 0; i < routes.length; i ++ ) {
-
-			var route = routes[ i ];
-
-			// verify if the route has yet another target (it is an intermediate route)
-
-			// 2. Find targetroutes of intermediate route, create a nested array
-			var nestedTargetRoutes = this.findTargetRoutes(route);
-			targetRoutes.push(nestedTargetRoutes);
-		}
-
-		// 3. Return targetroute
-		return targetRoutes;
-	},
-
-	/**
 	 * Utility to easily switch logging on and off with the debug flag.
 	 * @param obj
+	 * @param label
 	 */
 	log: function (obj, label) {
 
@@ -289,37 +237,6 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 
 			console.log(obj);
 		}
-	},
-
-	/**
-	 * Checks the sensor registry to find sensor that affect the object.
-	 *
-	 * @param Object3D the clicked geometry.
-	 * @param string sensorType
-	 * @returns array sensor names
-	 */
-	findSensors: function (object, sensorType) {
-		var sensorNames = [];
-
-		for ( var name in this.sensorRegistry[ sensorType ] ) {
-			//this.log('Checking the registry for ' + name);
-
-			for ( var i = 0; i < this.sensorRegistry[ sensorType ][ name ].length; i ++ ) {
-
-				if ( this.sensorRegistry[ sensorType ][ name ][ i ] === object ) {
-					// this object is controlled by the sensor a
-					//this.log('Found ' + i  + ' in ' + sensorType + ':' + name + ' and it is ' + object);
-					sensorNames.push(name);
-				}
-
-			}
-
-		}
-
-		this.log('The clicked object can be affected by the following sensors of type ' + sensorType + ':');
-		this.log(sensorNames);
-
-		return sensorNames;
 	},
 
 	// @todo: support more interactions than just clicking
@@ -337,12 +254,12 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 	 * ROUTE TimeSource.fraction_changed TO Deuropen.set_fraction
 	 * ROUTE Deuropen.value_changed TO deur.rotation
 	 *
-	 * @todo: translate event names to English, so that they make sense to people who are not able to read Dutch
+	 * @todo: translate event names in the example house.wrl to English, so that they make sense to people who are not able to read Dutch
 	 * The example is a three-step animation script:
 	 * 1. The touchTime of the touch sensor is routed to the time source. We can translate this step, since we have
 	 * a clock and a click event
 	 */
-	addClickSupport: function (camera, renderer) {
+	init: function (camera, renderer) {
 		var localCamera   = camera;
 		var localRenderer = renderer;
 		// clicking: enable clicking on the screen to interact with objects in the 3D world
@@ -350,7 +267,175 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 		var line;
 		var scope         = this;
 
+		/**
+		 * Checks the sensor registry to find sensors that affect the object.
+		 * The registry is only for sensors that affect geometries and need a list
+		 * of geometries that will respond to the sensor if clicked.
+		 *
+		 * @param object Object3D the clicked geometry.
+		 * @param sensorType String
+		 * @returns Array sensor names
+		 */
+		function _findSensors(object, sensorType) {
+			var sensorNames = [];
+
+			for ( var name in scope.sensorRegistry[ sensorType ] ) {
+				//this.log('Checking the registry for ' + name);
+
+				for ( var i = 0; i < scope.sensorRegistry[ sensorType ][ name ].length; i ++ ) {
+
+					if ( scope.sensorRegistry[ sensorType ][ name ][ i ] === object ) {
+						// this object is controlled by the sensor a
+						//this.log('Found ' + i  + ' in ' + sensorType + ':' + name + ' and it is ' + object);
+						sensorNames.push(name);
+					}
+
+				}
+
+			}
+
+			// scope.log('The clicked object can be affected by the following sensors of type ' + sensorType + ':');
+			// scope.log(sensorNames);
+
+			return sensorNames;
+		}
+
 		renderer.domElement.addEventListener('mousedown', function (event) {
+				/**
+				 * Recursively finds all targetroutes for a given route.
+				 *
+				 * @param triggerRoute
+				 * @returns Array
+				 */
+				function _findTargetRoutes(triggerRoute) {
+					var targetRoutes = [];
+
+					if ( 'undefined' === typeof triggerRoute ) {
+						return targetRoutes;
+					}
+
+					var routesRegistry = scene.userData.routes;
+					//this.log(routesRegistry, 'routesRegistry');
+
+					if ( 'undefined' === typeof routesRegistry[ triggerRoute.target.name ] ) {
+						// this is the leaf route
+						return triggerRoute;
+					}
+
+					// 1. Find first level of targetRoutes (they can be chained)
+					var routes = routesRegistry[ triggerRoute.target.name ];
+
+					// find all the target routes of intermediate routes
+					for ( var i = 0; i < routes.length; i ++ ) {
+
+						var route = routes[ i ];
+						// scope.log(route, 'Found follwoing route');
+
+						// verify if the route has yet another target (it is an intermediate route)
+
+						// 2. Find targetroutes of intermediate route, create a nested array
+						var nestedTargetRoutes = _findTargetRoutes(route);
+						targetRoutes.push(nestedTargetRoutes);
+					}
+
+					scope.log(targetRoutes, 'targetRoutes from private method');
+					// 3. Return targetroute
+					return targetRoutes;
+				}
+
+				/**
+				 * Gets all routes that were registered for a sensor in the original VRML world.
+				 *
+				 * Returned routes have a source and target object. Each have a name and event property.
+				 *
+				 * @param string name Name of the source node of the event.
+				 * @returns {*}
+				 */
+				function _getRoutesForEvent (name) {
+					var routesRegistry = scene.userData.routes;
+					var routes         = routesRegistry[ name ];
+					scope.log(routes, 'routes');
+					return routes;
+				}
+
+				function _addAnimation(rootRoute) {
+					var targetRoutes = _findTargetRoutes(rootRoute);
+					//scope.log(targetRoutes, 'targetRoutes');
+
+					for ( var j = 0; j < targetRoutes.length; j ++ ) {
+						var targetRoute = targetRoutes[ j ];
+						// always initialize at 2, because your are already at a child (2) of the root route (1)
+						var count       = 2;
+
+						/*
+						 What whe need to do here is pretty complex, because many routes can be chained. For now, I will make
+						 the assumpion that routes are setup as follows:
+						 1. Route a Sensor that interacts with the scene to trigger behavior (of these, currently TouchSensor is
+						 the only one supported, but we also have @todo ProximitySensor, PlaneSensor, CylinderSensor and possibly others.
+						 2. Route the Sensor from step 1 to a TimeSensor to be able to control the animation over time
+						 3. Route the time events from step 2 to an Interpolator, so that for example position and orientation can
+						 be changed.
+
+						 So in the cases of a click we already have the first step and now we need some awareness of time.
+						 The last step is to use the time to control the speed of the interpolation in step 3.
+
+						 Because we want the results to be predictable, we will not process routing sets that comprise more than
+						 3 routings. If there are more then 3 routings in a set, we will instead log a message.
+
+						 If you are using this library and you a use case with routing chains of more than 3 routings, please
+						 reate an issue on Github with example, requesting support for that use case. This would be really helpful
+						 in order to create better animations support.
+						 */
+
+						// because of the above assumption, the root route already points us to a TimeSensor, which is the target of our rootRoute.
+						var timeSensor = scene.getObjectByName(rootRoute.target.name);
+						var cycleInterval = timeSensor.userData.originalVrmlNode.cycleInterval;
+
+						while ( 'function' === typeof targetRoute.pop ) {
+
+							targetRoute = targetRoute.pop();
+
+							//scope.log(targetRoute, 'Just popped this targetRoute');
+							++ count;
+
+							if ( count > 3 ) {
+								scope.log('Event routing chains of more than 3 routes are not supported in the current version. Skipping ' + touch + '...');
+								return;
+							}
+
+							if ( 'undefined' === typeof targetRoute ) {
+								scope.log('no target route found for ' + touch);
+								return;
+							}
+						}
+
+						var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
+
+						// any supported interpolator will work, for now, only OrientationInterpolator and PositionInterpolator
+						if ( undefined === VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ] ) {
+							scope.log(originalNode.node + ' is not yet supported');
+							return;
+						}
+
+						var interpolator = new VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ](originalNode, cycleInterval, scope.debug);
+						scope.log(interpolator, originalNode.node);
+						var name   = 'surrounding_' + targetRoute.target.name;
+						var target = scene.getObjectByName(name);
+
+						// cleanup method for when the callback wants to be removed because it's done.
+						var finish = function (touch) {
+							return function () {
+								return scope.removeAnimation(touch);
+							}
+						}(touch); // capture touch in function scope, otherwise always last touch will be used
+
+						var callback = interpolator.getCallback(target, finish);
+
+						scope.log('Adding animation for ' + touch);
+						scope.addAnimation(touch, callback);
+					}
+				}
+
 				// use global camera, scene and renderer
 				var x = event.offsetX == undefined ? event.layerX : event.offsetX;
 				var y = event.offsetY == undefined ? event.layerY : event.offsetY;
@@ -368,59 +453,19 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 				if ( intersects.length ) {
 					var firstIntersect = intersects[ 0 ].object;
 
-					var touches = scope.findSensors(firstIntersect, 'TouchSensor');
+					var touches = _findSensors(firstIntersect, 'TouchSensor');
 
-					for ( var a in touches ) {
-						if ( ! touches.hasOwnProperty(a) ) {
-							continue;
-						}
+					for ( var k = 0; k < touches.length; k ++ ) {
 
-						var touch = touches[ a ];
+						var touch = touches[ k ];
 
-						var routes = scope.getRoutesForEvent(touch);
+						var routes = _getRoutesForEvent(touch);
 
 						for ( var i = 0; i < routes.length; i ++ ) {
 
-							var targetRoutes = scope.findTargetRoutes(routes[ i ]);
-							scope.log(targetRoutes, 'targetRoutes');
-
-							for ( var j = 0; j < targetRoutes.length; j ++ ) {
-								var targetRoute = targetRoutes[ j ];
-
-								//find leaf route, because we skip intermediate routes for now
-								while ( 'function' === typeof targetRoute.pop ) {
-									targetRoute = targetRoute.pop();
-
-									if ( 'undefined' === typeof targetRoute ) {
-										scope.log('no target route found for ' + touch);
-										return;
-									}
-								}
-
-								var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
-
-								// any supported interpolator will work, for now, only OrientationInterpolator and PositionInterpolator
-								if ( undefined === VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ] ) {
-									scope.log(originalNode.node + ' is not yet supported');
-									return;
-								}
-
-								var interpolator = new VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ](originalNode, scope.debug);
-								scope.log(interpolator, originalNode.node);
-								var name   = 'surrounding_' + targetRoute.target.name;
-								var target = scene.getObjectByName(name);
-
-								// cleanup method for when the callback wants to be removed because it's done.
-								var finish = function (touch) {
-									return function() {
-										return scope.removeAnimation(touch);
-									}
-								}(touch); // capture touch in function scope, otherwise always last touch will be used
-
-								var callback = interpolator.getCallback(target, finish);
-
-								scope.addAnimation(touch, callback);
-							}
+							var rootRoute = routes[ i ];
+							scope.log(rootRoute, 'rootRoute');
+							_addAnimation(rootRoute);
 						}
 					}
 

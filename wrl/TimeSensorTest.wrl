@@ -1,0 +1,103 @@
+#VRML V2.0 utf8
+
+Viewpoint {
+    fieldOfView    1.1
+    jump           TRUE
+    orientation    0 1 0 -1.5707963
+    position       0 1.1 -6
+    description    "view 1"
+}
+
+DirectionalLight {
+    ambientIntensity  0
+    color             1 0.98 0.965
+    direction         0.5 -0.9 -1
+    intensity         1.4
+    on                TRUE
+}
+
+DirectionalLight {
+    ambientIntensity  0
+    color             0.85 0.85 1
+    direction         -0.5 0.3 1
+    intensity        0.7
+    on                TRUE
+}
+
+DEF klik TouchSensor {
+    enabled TRUE
+}
+
+DEF klik2 TouchSensor {
+    enabled TRUE
+}
+
+DEF positie PositionInterpolator {
+    key [0, 0.5, 1]
+    keyValue
+    [
+        0 0 0,
+        3 0 0,
+        6 0 0,
+        3 0 0,
+        0 0 0,
+    ]
+}
+
+DEF positie2 PositionInterpolator {
+    key [0, 0.5, 1,]
+    keyValue
+    [
+        0 1.2 0,
+        3 1.2 0,
+        6 1.2 0,
+        3 1.2 0,
+        0 1.2 0,
+    ]
+}
+
+DEF tijd TimeSensor {
+    cycleInterval 2
+    enabled       TRUE
+    loop          FALSE
+    startTime     0
+    stopTime      0
+}
+
+DEF tijd2 TimeSensor {
+    cycleInterval 4
+    enabled       TRUE
+    loop          FALSE
+    startTime     0
+    stopTime      0
+}
+
+DEF box Transform {
+    children [
+        Shape {
+            appearance Appearance {
+                material Material {
+                    diffuseColor 0.5 0.5 0
+                }
+            }
+            geometry Box {
+                size 1 1 1
+            }
+        }
+    ]
+    translation 0 0 0
+}
+
+DEF box2 Transform{
+    children USE box
+    translation 0 1.2 0
+}
+
+
+ROUTE klik.touchTime TO tijd.startTime
+ROUTE tijd.fraction_changed TO positie.set_fraction
+ROUTE positie.value_changed TO box.position
+
+ROUTE klik2.touchTime TO tijd2.startTime
+ROUTE tijd2.fraction_changed TO positie2.set_fraction
+ROUTE positie2.value_changed TO box2.position

@@ -13,8 +13,8 @@
  * @param originalNode
  * @constructor
  */
-VrmlParser.Renderer.ThreeJs.VrmlNode[ 'OrientationInterpolator' ] = function (originalNode, debug) {
-	VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.call(this, originalNode, debug);
+VrmlParser.Renderer.ThreeJs.VrmlNode[ 'OrientationInterpolator' ] = function (originalNode, cycleInterval, debug) {
+	VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.call(this, originalNode, cycleInterval, debug);
 }
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype = Object.create(VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.prototype);
@@ -30,10 +30,10 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype.tween = f
 	var endQuaternion = new THREE.Quaternion();
 	var vector3       = new THREE.Vector3(r.x, r.y, r.z);
 	endQuaternion.setFromAxisAngle(vector3, endRadians);
-
+	var duration    = this.getDuration();
 	this.tweenObj = new TWEEN
 		.Tween(this.target.quaternion)
-	.to(endQuaternion)
+	.to(endQuaternion, duration)
 	.start(+ new Date())
 	.onComplete(function () {
 		scope.complete();

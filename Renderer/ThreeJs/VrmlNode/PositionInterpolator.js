@@ -14,22 +14,22 @@
  * @param debug
  * @constructor
  */
-VrmlParser.Renderer.ThreeJs.VrmlNode[ 'PositionInterpolator' ] = function (originalNode, debug) {
-	VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.call(this, originalNode, debug);
+VrmlParser.Renderer.ThreeJs.VrmlNode[ 'PositionInterpolator' ] = function (originalNode, cycleInterval, debug) {
+	VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.call(this, originalNode, cycleInterval, debug);
 }
 
-VrmlParser.Renderer.ThreeJs.VrmlNode.PositionInterpolator.prototype = Object.create( VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.prototype);
+VrmlParser.Renderer.ThreeJs.VrmlNode.PositionInterpolator.prototype = Object.create(VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.prototype);
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.PositionInterpolator.prototype.tween = function () {
 	var scope       = this;
 	var endPosition = this.getPosition();
-	// this.log('Moving from ');
-	// this.log(this.target.position);
-	// this.log('to');
-	// this.log(endPosition);
+	this.log(this.key);
+
+	var duration = this.getDuration();
+	this.log(duration);
 	this.tweenObj = new TWEEN
 		.Tween(this.target.position)
-	.to(endPosition)
+	.to(endPosition, duration)
 	.start(+ new Date())
 	.onComplete(function () {
 			scope.complete();

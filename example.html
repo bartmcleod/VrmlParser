@@ -170,7 +170,7 @@
 		// add support for animation and interaction
 		animation = new VrmlParser.Renderer.ThreeJs.Animation(debug);
 
-		animation.addClickSupport(camera, renderer);
+		animation.init(camera, renderer);
 
 		// initialize the viewpoinst with the camera from the global scope
 		vrmlConverter.viewpoints = {
@@ -193,7 +193,7 @@
 		// VRML parser example:
 		var xhrLoader = new THREE.XHRLoader();
 		// onLoad, onProgress, onError
-		xhrLoader.load('wrl/house.wrl', function (data) {
+		xhrLoader.load('wrl/vaneyck.wrl', function (data) {
 			try {
 				var tree = vrmlParser.parse(data);
 			} catch ( e ) {

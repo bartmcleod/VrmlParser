@@ -14,7 +14,7 @@
  * @param bool debug
  * @constructor
  */
-VrmlParser.Renderer.ThreeJs.VrmlNode[ 'Interpolator' ] = function (originalNode, debug) {
+VrmlParser.Renderer.ThreeJs.VrmlNode[ 'Interpolator' ] = function (originalNode, cycleInterval, debug) {
 	this.originalNode = originalNode;
 	// inherit from VrmlNode
 	VrmlParser.Renderer.ThreeJs.VrmlNode.call(this, originalNode, debug);
@@ -25,15 +25,32 @@ VrmlParser.Renderer.ThreeJs.VrmlNode[ 'Interpolator' ] = function (originalNode,
 	this.target   = null;
 	this.tweenObj = null;
 	this.finish = null;
+	// for duration of a single tween, convert to milliseconds and devide by the number of transitions
+	this.cycleInterval = cycleInterval;
 }
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.prototype.finish = function(){}
+
+/**
+ * Calculates the duration of a transition defined in this.key, based on the total time of the animation
+ * (this.cycleInterval) and the proportional duration of the single transition, based on the difference between
+ * the current and the previous key. The result is converted to milliseconds and can be used as the duration for
+ * a tween.
+ *
+ * @returns {number}
+ */
+VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.prototype.getDuration = function(){
+	var currentKey = this.key[ this.index ];
+	var previousKey = this.key[ this.index - 1 ];
+	var duration = (currentKey - previousKey) * 1000 * this.cycleInterval;
+	return duration;
+}
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.prototype.complete = function () {
 	// take next key or finish
 	this.index ++;
 
-	if ( this.index >= this.keyValue.length ) {
+	if ( this.index >= (this.keyValue.length) ) {
 
 		if ( this.finish() ) {
 			this.log('Interpolator "' + this.originalNode.name + '" finished at index ' + this.index);

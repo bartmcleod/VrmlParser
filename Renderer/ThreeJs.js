@@ -744,6 +744,9 @@ VrmlParser.Renderer.ThreeJs.prototype = {
           // }
 
           break;
+        case 'TimeSensor':
+					// just explicitly keep the object (by not setting it to false), do nothing else
+          break;
         case 'TouchSensor':
           // just explicitly keep the object (by not setting it to false), do nothing else
           if ( scope.debug ) {
