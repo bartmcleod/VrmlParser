@@ -38,7 +38,7 @@ Note that the options come before the input file name. Running this command will
 ```
 var xhrLoader = new THREE.XHRLoader();
 // onLoad, onProgress, onError
-xhrLoader.load("wrl/brinkweg/single_brinkweg.wrl", function (data){
+xhrLoader.load("wrl/house.wrl", function (data){
     var tree = vrmlParser.parse(data);
     consele.log(tree);
 }, function (){},function(){});

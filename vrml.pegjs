@@ -325,7 +325,7 @@ use
 	{ return true; }
 
 face
-	= points:index+ "-1" ","? ws
+	= points:index+ "-1"  ( " " / "," / "\n" / "\t" ) ws
 	{ return points; }
 
 index

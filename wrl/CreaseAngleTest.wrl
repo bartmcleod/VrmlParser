@@ -1,0 +1,55 @@
+#VRML V2.0 utf8
+NavigationInfo {
+
+}
+Transform {
+	# a comment about the transform node
+	children [
+		Shape {
+appearance Appearance {
+material Material {
+  diffuseColor 1.0 1. 1.
+  specularColor 0. 0. 0.
+  emissiveColor 0.1 0.1 0.1
+  ambientIntensity 1.
+  shininess  0.
+  transparency 0.0
+} }
+            geometry IndexedFaceSet {
+                color             NULL
+                coord  Coordinate {
+                    point [
+  -0.4240  -2.4048  -1.2984    #  1
+  -0.5081  -2.3903  -1.2994    #  1
+  -0.5937  -2.3812  -1.3048    #  1
+  -0.6807  -2.3739  -1.3131    #  1
+  -0.7694  -2.3680  -1.3239    #  1
+  -0.8610  -2.3655  -1.3385    #  1
+  -0.9557  -2.3655  -1.3565    #  1
+  -1.0530  -2.3650  -1.3765    #  1
+  -1.1520  -2.3620  -1.3973    #  1
+  -1.2538  -2.3581  -1.4201    #  1
+  -1.3571  -2.3505  -1.4432    #  1
+  -1.4636  -2.3422  -1.4685    #  1
+  -1.5724  -2.3312  -1.4951    #  1
+  -1.6835  -2.3171  -1.5229    #  1
+                    ]
+                }
+                normal            NULL
+
+                ccw               TRUE
+                colorIndex        [ ]
+                colorPerVertex    TRUE
+                convex            TRUE # more commenting here
+                coordIndex  [
+                    0 ,1 , 2, -1,
+                ]
+            }
+        }
+	]
+    rotation 0.4 0.2 0.1 0
+    translation -6 2 0
+    scale 4 4 4 # another comment
+}
+
+#the comment at the vrml root level
