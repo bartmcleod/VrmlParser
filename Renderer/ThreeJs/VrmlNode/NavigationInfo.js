@@ -35,9 +35,9 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo.prototype.parse = function (
 				break;
 		}
 	} else {
-		this.log('fly!');
+		this.log('orbit!');
 		// use global controls and camera, no better solution at hand
-		controls               = new THREE.FlyControls(camera);
+		controls               = new THREE.OrbitControls(camera);
 		controls.movementSpeed = speed;
 	}
 
