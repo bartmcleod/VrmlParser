@@ -649,7 +649,20 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 									}
 
 									if ( facesBuffer[ key ].faces.indexOf(face) === - 1 ) {
+
+										// first make all the combinations
+										if (facesBuffer[ key ].combinations === undefined) {
+											facesBuffer[ key ].combinations = [];
+										}
+
+										for (var i=0; i < facesBuffer[ key ].faces.length; i++) {
+											// add combination with face for each existingFace, this will, all combinations will be always made
+											var existingFace = facesBuffer[ key ].faces[i];
+											facesBuffer[ key ].combinations.push([face, existingFace ]);
+										}
+
 										facesBuffer[ key ].faces.push(face);
+
 									}
 
 								}
@@ -659,24 +672,25 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 								_pushToFaceBuffer(b, c, face);
 								_pushToFaceBuffer(c, a, face);
 
-								if ( uvs && uvIndexes ) {
-									object.faceVertexUvs [ 0 ].push([
-										new THREE.Vector2(
-											uvs[ uvIndexes[ 0 ] ].x,
-											uvs[ uvIndexes[ 0 ] ].y
-										),
-										new THREE.Vector2(
-											uvs[ uvIndexes[ skip + (node.ccw ? 1 : 2) ] ].x,
-											uvs[ uvIndexes[ skip + (node.ccw ? 1 : 2) ] ].y
-										),
-										new THREE.Vector2(
-											uvs[ uvIndexes[ skip + (node.ccw ? 2 : 1) ] ].x,
-											uvs[ uvIndexes[ skip + (node.ccw ? 2 : 1) ] ].y
-										)
-									]);
-								} else {
-									//scope.log('Missing either uvs or indexes');
-								}
+								// If section below proves to be useful sometime it can be turned back on.
+								// if ( uvs && uvIndexes ) {
+								// 	object.faceVertexUvs [ 0 ].push([
+								// 		new THREE.Vector2(
+								// 			uvs[ uvIndexes[ 0 ] ].x,
+								// 			uvs[ uvIndexes[ 0 ] ].y
+								// 		),
+								// 		new THREE.Vector2(
+								// 			uvs[ uvIndexes[ skip + (node.ccw ? 1 : 2) ] ].x,
+								// 			uvs[ uvIndexes[ skip + (node.ccw ? 1 : 2) ] ].y
+								// 		),
+								// 		new THREE.Vector2(
+								// 			uvs[ uvIndexes[ skip + (node.ccw ? 2 : 1) ] ].x,
+								// 			uvs[ uvIndexes[ skip + (node.ccw ? 2 : 1) ] ].y
+								// 		)
+								// 	]);
+								// } else {
+								// 	//scope.log('Missing either uvs or indexes');
+								// }
 
 								skip ++;
 
@@ -692,21 +706,50 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					// but it is a bit of a hack, since you actually only want to add the faces to the object later...
 					object.computeFaceNormals();
 
+					// /**
+					//  * Gives you all possible combinations of 2 faces out of a set of faces.
+					//  *
+					//  * @param faces
+					//  * @private
+					//  */
+					// var _calculateCombinationsOfFaces = function(faces) {
+					//
+					// 		if (typeof faces !== 'Array') {
+					// 			scope.log('faces is not an Array in _getPermutationsOfFaces');
+					// 			return [];
+					// 		}
+					//
+					// 		// smaller then two is not a combination
+					// 		if (faces.length < 2) {
+					// 			return [];
+					// 		}
+					//
+					// 		// 2 means only one combination of 2 faces.
+					// 		if (faces.length === 2) {
+					// 			return faces;
+					// 		}
+					//
+					// }
+
 					// now, can we determine if the edge is sharp or not and duplicate edges if needed (when sharp) ?
 					for ( var a in facesBuffer ) {
 						if ( ! facesBuffer.hasOwnProperty(a) ) {
 							continue;
 						}
 
-						if ( facesBuffer[ a ].faces.length !== 2 ) {
+						if ( facesBuffer[ a ].faces.length < 2 ) {
 							continue;
 						}
 
-						scope.log(a + ' has two faces.');
-						// compute facenormal for each of the two faces and calculate their angle, if it larger than creaseAngel,
-						// the edge is sharp and one of the faces will have to be recalculated with duplicated points,
-						// which will have to be added to the vertices
-						// once all final vertices and faces (partly duplicated) have been buffered, they can be added to the geometry
+						// scope.log(a + ' has more than one.');
+
+						/*
+						 Compute facenormal for each face and calculate their angle, if it is larger than creaseAngle,
+						 the edge is sharp and the face will have to be recalculated with duplicated points,
+						 which will have to be added to the vertices of the object.
+						 Once all final vertices and faces (partly duplicated) have been buffered, they can be added to the geometry,
+						 or exsting faces can be replaced by faces with duplicated edges.
+						 */
 
 						var face1 = facesBuffer[ a ].faces[ 0 ];
 
