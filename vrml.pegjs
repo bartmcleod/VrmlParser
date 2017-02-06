@@ -208,6 +208,7 @@ array "array"
 
 value "value"
   = false
+  / points
   / OrientationInterpolator
   / face
   / null
@@ -290,6 +291,9 @@ space
 point
 	= p:vector ","? ws comment? { return p; }
 
+points
+    = point / comment
+
 vector
 	= ws? x:number ws y:number ws z:number ws comment?
 	{ return {x:x, y:y, z:z}; }
@@ -325,7 +329,7 @@ use
 	{ return true; }
 
 face
-	= points:index+ "-1"  ( " " / "," / "\n" / "\t" ) ws
+	= points:index+ "-1"  ( "" / " " / "," / "\n" / "\t"  )
 	{ return points; }
 
 index

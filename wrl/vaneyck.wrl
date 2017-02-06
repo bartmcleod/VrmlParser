@@ -4,7 +4,8 @@
 NavigationInfo {
     avatarSize       [ 0.1, 1.6, 0.2,]
     headlight        FALSE
-    speed            4
+#    speed            4
+    speed            0
     type		"FLY"
     visibilityLimit  0.0
 }
@@ -103,7 +104,7 @@ DirectionalLight {
     ambientIntensity  0
     color             1 0.98 0.965
     direction         0.5 -0.9 -1
-    intensity         1.4
+    intensity         1
     on                TRUE
 }
 
@@ -111,8 +112,8 @@ DirectionalLight {
     ambientIntensity  0
     color             0.85 0.85 1
     direction         -0.5 0.3 1
-    intensity        0.7
-    on                TRUE
+    intensity        0.4
+    on               TRUE
 }
 
 

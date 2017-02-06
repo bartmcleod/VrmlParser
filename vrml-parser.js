@@ -7,7 +7,7 @@ require('pegjs-require');
 var fs = require('fs');
 var parser = require('./vrml.pegjs');
 var consoleRenderer = require('./Renderer/Console.js');
-var vrmlText = fs.readFileSync('wrl./test.wrl', 'utf8');
+var vrmlText = fs.readFileSync('wrl/SimpleIndexedFaceSet.wrl', 'utf8');
 
 try {
   var nodeTree = parser.parse(vrmlText);

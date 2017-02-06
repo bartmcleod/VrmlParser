@@ -1,0 +1,76 @@
+#VRML V2.0 utf8
+
+# Tests if duplication of edges works correctly when three squares meet at a single vertex
+
+NavigationInfo {
+
+}
+
+
+Viewpoint {
+    fieldOfView    1
+    jump           TRUE
+    orientation    0 0 1 0
+    position       0 0 10
+
+    description    "Positive z"
+}
+
+DirectionalLight {
+    ambientIntensity  0
+    color             1 1 0.9
+    direction         0.5 -1.5 -1
+    intensity         2
+    on                TRUE
+}
+
+DirectionalLight {
+    ambientIntensity  0
+    color             1 1 0.9
+    direction         -0.5 1 1
+    intensity        2
+    on                TRUE
+}
+
+Transform {
+	children [
+		Shape {
+            appearance Appearance {
+                material Material {
+                  diffuseColor 1 1 0
+                }
+            }
+            geometry IndexedFaceSet {
+                creaseAngle 0.5
+                coord  Coordinate {
+                    point [
+                        0 0 0, # for frontal square
+                        1 0 0,
+                        1 1 0,
+                        0 1 0, #3
+
+                        1 0 -1, #4 for right side square
+                        1 1 -1, #5
+
+                        0 1 -1, #6 for top side square
+
+                        # the squares meet in 1 1 0 (point at index 2)
+                    ]
+                }
+                normal            NULL
+                solid FALSE
+
+                ccw               TRUE
+                coordIndex  [
+                    # front
+                    0, 1, 2, 3, -1,
+                    # right side
+                    1, 4, 5, 2, -1,
+                    # top
+                    # 3, 2, 5, 6, -1,
+                ]
+            }
+        }
+	]
+}
+

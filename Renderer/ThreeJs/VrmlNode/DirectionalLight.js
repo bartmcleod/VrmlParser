@@ -23,9 +23,11 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.DirectionalLight.prototype.parse = function
 	var dirLight = new THREE.DirectionalLight(color ? color : '0xaaaaaa');
 
 	if ( this.node.has('direction') ) {
-		// @todo I'm not sure whether translation of direction to a position is actually correct, but the result with the house.wrl looks ok
+		// From the docs: the orientation / direction of the light is calculated from its position to its target.
+		// So if the target is a default (0,0,0)? then calculating position to target would result in the inverse of direction
+		// So we negate te vector a arrive at direction
 		var d = this.node.direction;
-		dirLight.position.set(d.x, d.y, d.z).normalize();
+		dirLight.position.set(-d.x, -d.y, -d.z);
 	}
 
 	if ( this.node.has('on') ) {
@@ -37,7 +39,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.DirectionalLight.prototype.parse = function
 	}
 
 	camera.add(dirLight);
-	camera.add(dirLight.target);
+	camera.add(dirLight.target); // where does target come from?
 
-	// todo: use the cumulative value of ambient intensity to set up an ambient ligth
+	// todo: use the cumulative value of ambient intensity to set up an ambient light
 };

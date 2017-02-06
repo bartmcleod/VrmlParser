@@ -59,9 +59,14 @@ Transform {
                         -1 1 0.1,
                         -1 0 0.1, #7
 
-                        # for testing, double the set of extra points, to be able to make extra edges
-                       # 1 1 0,
-                       # 1 0 0, #9
+                        # extra points for second side square, following side square
+                        1 1 2,
+                        1 0 2, #9
+
+                        # extra points for third side square, following second side square
+                        1 1 3,
+                        1 0 3, #11
+
                     ]
                 }
                 normal            NULL
@@ -73,11 +78,16 @@ Transform {
                     0, 1, 2, 3, -1,
 
                     # second square, large crease angle
-                    #9, 5, 4, 8, -1,
                     2, 3, 5, 4, -1,
 
                     # third (almost) square, small crease angle compared to first (center) square
                     1, 0, 7, 6, -1,
+
+                    # fourth square, 0 creae angle compared to second square
+                    8, 4, 5, 9, -1,
+
+                    # fourth square, 0 creae angle compared to second square
+                    8, 10, 11, 9, -1,
                 ]
             }
         }

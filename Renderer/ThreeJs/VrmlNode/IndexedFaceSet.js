@@ -12,12 +12,18 @@ VrmlParser.Renderer.ThreeJs.VrmlNode[ 'IndexedFaceSet' ] = function (originalNod
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function () {
 	var object = new THREE.Object3D();
-	var node = this.node;
-	var scope = this;
+	var node   = this.node;
+	var scope  = this;
 
 	// @todo: separate the logic for duplicating edges into a separate component,
 	// because it will have to be reused in Extrusion and ElevationGrid
 	var verticesBuffer = [];
+
+	/**
+	 * This will keep track of all faces per vertex, so it tells you for each vertex, which faces it is a part of.
+	 * @type {{}}
+	 */
+	var verticesRegistry = [];
 
 	/*
 	 An edge always shares two faces at most. So the registry of faces for smoothing edges, should be
@@ -31,9 +37,21 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 	 Structure:
 	 {'string_vector_representation': {faces: [], edge: "smooth|sharp"}}
 	 */
-	var facesBuffer = [];
+	var facesBuffer = {};
 	object          = new THREE.Geometry();
 	//object.shading = THREE.SmoothShading;
+
+	/**
+	 * A key describes an edge in a uniform manner.
+	 *
+	 * @param index1
+	 * @param index2
+	 * @private
+	 */
+	var _buildKey = function (index1, index2) {
+		var key = parseInt(index1) < parseInt(index2) ? index1 + '_' + index2 : index2 + '_' + index1;
+		return key;
+	}
 
 	/**
 	 * The facebuffer has to keep track of combinations of faces that share edges.
@@ -48,7 +66,14 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 	 */
 	var _pushToFaceBuffer = function (index1, index2, face) {
 		// the inverted key must also be valid, so always put lowest number first
-		var key = parseInt(index1) < parseInt(index2) ? index1 + '_' + index2 : index2 + '_' + index1;
+		var key = _buildKey(index1, index2);
+
+		// keep registry of which vertices takes part in which face
+		if ( verticesRegistry[ parseInt(index1) ] === undefined ) {
+			verticesRegistry[ parseInt(index1) ] = [];
+		}
+
+		verticesRegistry[ parseInt(index1) ].push(face);
 
 		if ( undefined === facesBuffer[ key ] ) {
 			facesBuffer[ key ] = { faces: [] };
@@ -77,17 +102,18 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 	 * Edges that have to be rendered sharply have to be redrawn and their faces replaced
 	 * with the redrawn edges. For the new edges, duplicate vertices are needed.
 	 *
+	 * face normals before you duplicate and you only have face normals (currently) after you
+	 * have created an object, so after triangulation. This is turning in to a Yak shaving exercise.
+	 *
 	 * @private
 	 */
-	var _duplicateVertices = function (key, face) {
-		// @todo: duplicate shared vertices, add the to object and or buffer
-		// @todo: redraw the face with the new vertices and replace the old face in the object
-		// or simply set the new indices on the face
+	var _duplicateVertices = function (key, face, keepFace) {
+		scope.log(key + ' is DUPLICATED in _duplicateVertices');
 		var indices = key.split('_');
 
 		// duplicate the corresponding vertices
-		var vec1 = verticesBuffer[indices[0]].clone();
-		var vec2 = verticesBuffer[indices[1]].clone();
+		var vec1 = verticesBuffer[ indices[ 0 ] ].clone();
+		var vec2 = verticesBuffer[ indices[ 1 ] ].clone();
 		verticesBuffer.push(vec1);
 		verticesBuffer.push(vec2);
 
@@ -95,36 +121,202 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 		object.vertices.push(vec1);
 		object.vertices.push(vec2);
 
+		scope.log('Duplicates vertices:');
+		scope.log([ vec1, vec2 ]);
+
 		// get the new indices
 		var d = object.vertices.indexOf(vec1);
 		var e = object.vertices.indexOf(vec2);
 
-		scope.log('face before:');
-		scope.log(face);
-
 		// modify the face by replacing the old with the new indices
-		if (face.a === indices[0]) {
+		if ( face.a === indices[ 0 ] ) {
 			face.a = d;
 		}
-		if (face.b === indices[0]) {
+		if ( face.b === indices[ 0 ] ) {
 			face.b = d;
 		}
-		if (face.c === indices[0]) {
+		if ( face.c === indices[ 0 ] ) {
 			face.c = d;
 		}
 
-		if (face.a === indices[1]) {
+		if ( face.a === indices[ 1 ] ) {
 			face.a = e;
 		}
-		if (face.b === indices[1]) {
+		if ( face.b === indices[ 1 ] ) {
 			face.b = e;
 		}
-		if (face.c === indices[1]) {
+		if ( face.c === indices[ 1 ] ) {
 			face.c = e;
 		}
 
-		scope.log('face after:');
+		scope.log('face after swap:');
 		scope.log(face);
+		/*
+		 * * @todo there is a challenge here. I tested this with squares and
+		 * they get triangulated. Not out of strict necessity, but I do it for simplicities sake.
+		 * I also made the assumption that all faces are convex, while they don't need to be in VRML, unless convex TRUE is set.
+		 * Now if you replace two point indexes in a triangulated face, because it shares a sharp edge with another face,
+		 * then the line between the two faces will be rendered all sharp and nice, but the triangular face that has the new
+		 * vertices will now be visually separated from the triangle is had been paired with when the original square face
+		 * was triangulated. This is because the paired face still uses the old vertex. This means you should also swap that
+		 * particular vertex, to keep the surface of the square smooth. Now how can you tell, which face using vertex at index 3
+		 * now has to use vertex at index 9 because you swapped that? Note that this did not occur in the manual test, because
+		 * there your typed a square face with replaced vertexes, so the problem could not occur, because the vertex swapping happended
+		 * before the triangulation.
+		 *
+		 * How to solve it?
+		 * 1. Find all combinations that share the swapped vertex.
+		 * 2. Do they have a 'smooth' edge with this face?
+		 * 3. Then also swap the vertex there
+		 * */
+		scope.log(key + ' is key to be swapped!');
+		_swapVertices(indices[ 0 ], d, indices[ 1 ], e, face, keepFace);
+
+	}
+
+	/**
+	 * Utility method, which helps counting how many indexes two faces will have in
+	 * common after swapping vertices.
+	 *
+	 * @param face
+	 * @param swapIndex
+	 * @param swapIndex2
+	 * @private
+	 */
+	var _getSwappedIndex = function (face, abc, index, swapIndex, index2, swapIndex2) {
+		if ( face[ abc ] == index ) {
+			return swapIndex;
+		} else if ( face[ abc ] == index2 ) {
+			return swapIndex2;
+		}
+		return face[ abc ];
+	}
+	/**
+	 * @todo there is a challenge here.
+	 * I tested this with squares and
+	 * they get triangulated. Not out of strict necessity, but I do it for simplicities sake.
+	 * I also made the assumption that all faces are convex, while they don't need to be in VRML, unless convex TRUE is set.
+	 * Now if you replace two point indexes in a triangulated face, because it shares a sharp edge with another face,
+	 * then the line between the two faces will be rendered all sharp and nice, but the triangular face that has the new
+	 * vertices will now be visually separated from the triangle is had been paired with when the original square face
+	 * was triangulated. This is because the paired face still uses the old vertex. This means you should also swap that
+	 * particular vertex, to keep the surface of the square smooth. Now how can you tell, which face using vertex at index 3
+	 * now has to use vertex at index 9 because you swapped that? Note that this did not occur in the manual test, because
+	 * there you typed a square face with replaced vertexes, so the problem could not occur, because the vertex swapping happended
+	 * before the triangulation.
+	 *
+	 * How to solve it?
+	 * 1. Find all combinations that share the swapped vertex.
+	 * 2. Do they have a 'smooth' edge with this face?
+	 * 3. Then also swap the vertex there
+	 * @param indices
+	 * @private
+	 */
+	var _swapVertices    = function (index, swapIndex, index2, swapIndex2, triggerFace, keepFace) {
+		scope.log('Swapping vertex ' + index + ' for ' + swapIndex);
+		scope.log('Swapping vertex ' + index2 + ' for ' + swapIndex2);
+		scope.log('triggerFace:');
+		scope.log(triggerFace);
+		// 1. Find all combinations that share the swapped vertex.
+		// to avoid searching for it, we kept a registry per vertex telling in which faces is appears
+		// in all of those faces, swap the vertex
+		/** @var Array faces **/
+		var faces = verticesRegistry[ parseInt(index) ];
+		var faces2 = verticesRegistry[ parseInt(index2) ];
+
+		var combinedFaces = faces.concat(faces2);
+		scope.log('combinedFaces:');
+		scope.log(combinedFaces);
+
+		var face;
+		var swapped;
+		var edgeIsSharp;
+		var sharesNoEdge;
+
+		for ( var i = 0; i < combinedFaces.length; i ++ ) {
+			swapped = false;
+			face    = combinedFaces[ i ];
+
+			if (face == keepFace) {
+				continue;
+			}
+			// scope.log('faces buffer:');
+			// scope.log(facesBuffer);
+
+			/* The vertex must be swapped on the face if it has no edge which is the same as the edge with the triggerKey,
+			 * because the triggerKey describes a sharp edge, which should remain sharp. Swapping is only done for
+			 * smoot edges */
+			edgeIsSharp = false;
+
+			var swappedForA           = _getSwappedIndex(face, 'a', index, swapIndex, index2, swapIndex2);
+			var swappedForB           = _getSwappedIndex(face, 'b', index, swapIndex, index2, swapIndex2);
+			var swappedForC           = _getSwappedIndex(face, 'c', index, swapIndex, index2, swapIndex2);
+
+			scope.log('Swapped for:');
+			scope.log([swappedForA, swappedForB, swappedForC]);
+			scope.log('triggerFace:');
+			scope.log(triggerFace);
+
+			/* If two indexes would be shared after a swap, the triangles share an edge
+			 * If three indexes are the same, the trangles are the same */
+			var theSame = 0;
+			
+			if (swappedForA == triggerFace.a || swappedForA == triggerFace.b || swappedForA == triggerFace.c) {
+				theSame++;
+			}			
+			if (swappedForB == triggerFace.a || swappedForB == triggerFace.b || swappedForB == triggerFace.c) {
+				theSame++;
+			}			
+			if (swappedForC == triggerFace.a || swappedForC == triggerFace.b || swappedForC == triggerFace.c) {
+				theSame++;
+			}
+
+			if (theSame === 3) {
+				scope.log('Same face, nothing to do here.');
+				continue;
+			}
+
+			// if two vertices are the same as that of the triggerFace, this face shares an edge with it
+			sharesNoEdge = theSame < 2;
+
+			// when is the edge sharp?
+
+			if ( edgeIsSharp || sharesNoEdge ) {
+				if (sharesNoEdge) {
+					scope.log('Shares no edge, skipping');
+				} else {
+					scope.log('Sharp edge, skipping:');
+				}
+				scope.log(face);
+				continue;
+			} else {
+				scope.log('Smooth edge:');
+				scope.log(face);
+			}
+
+			if ( face.a != swappedForA ) {
+				// scope.log('Swapped index a for ' + swapIndex);
+				face.a  = swappedForA;
+				swapped = true;
+			}
+
+			if ( face.b != swappedForB ) {
+				// scope.log('Swapped index b for ' + swapIndex);
+				face.b  = swappedForB;
+				swapped = true;
+			}
+
+			if ( face.c != swappedForC ) {
+				// scope.log('Swapped index c for ' + swapIndex);
+				face.c  = swappedForC;
+				swapped = true;
+			}
+
+			if ( swapped ) {
+				scope.log('Face after _swapVertices');
+				scope.log(face);
+			}
+		}
 
 	}
 
@@ -191,6 +383,8 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 					null // normal, will be added later
 					// todo: pass in the color, if a color index is present
 				);
+
+				scope.log(face);
 
 				// push all the edges, with the face
 				_pushToFaceBuffer(a, b, face);
@@ -280,22 +474,22 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 
 			if ( angle > creaseAngle ) {
 				combinations[ j ].edge = 'sharp';
+				scope.log('Duplicating because angle ' + angle + ' is larger than creaseAngle ' + creaseAngle);
 
 				// duplicate the vertices and redraw face2 with the new vertices
-				_duplicateVertices(a, face2);
+				_duplicateVertices(a, face2, face1);
 			}
 			/* */
 		}
 
 	}
 
-	this.log(facesBuffer);
-
 	// object.mergeVertices();
-
 	object.computeVertexNormals();
+	this.log(object.faces);
 
 	object.computeBoundingSphere();
 	return object;
 
 };
+//@todo in debug mode add arrow to show direction of face normal

@@ -373,6 +373,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 									var materialColor = convertVectorToColor(vrmlMaterial.color);
 
 									material.color.setRGB(materialColor.r, materialColor.g, materialColor.b);
+									material.shininess = 0;
 
 								}
 							} else if ( isPoint ) {
@@ -402,7 +403,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 								//scope.log('Mesh object');
 
 								// @todo: we use a MeshPhongMaterial for meshes, but is this always appropriate for VRML?
-								material = new THREE.MeshPhongMaterial();
+								material = new THREE.MeshLambertMaterial();
+								// material.shading = THREE.SmoothShading;
 
 								if ( vrmlMaterial.has('diffuseColor') ) {
 
@@ -420,7 +422,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 								}
 
-								if ( vrmlMaterial.has('specularColor') ) {
+								// specular is only defined for phong material, so check!
+								if ( vrmlMaterial.has('specularColor') && undefined !== material.specular) {
 
 									var specularColor = convertVectorToColor(vrmlMaterial.specularColor);
 
@@ -541,19 +544,24 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 				case 'Box':
 					var s          = node.size;
 					object         = new THREE.BoxGeometry(s.x, s.y, s.z);
-					object.shading = THREE.SmoothShading;
+					object.computeVertexNormals();
 					break;
 
 				case 'Cylinder':
-					object = new THREE.CylinderGeometry(node.radius, node.radius, node.height);
+					object = new THREE.CylinderGeometry(node.radius, node.radius, node.height, 36);
+					object.computeFaceNormals();
+					object.computeVertexNormals();
 					break;
 
 				case 'Cone':
+					// @todo: see if you can use ConeGeometry
 					object = new THREE.CylinderGeometry(node.topRadius, node.bottomRadius, node.height);
+					object.computeVertexNormals();
 					break;
 
 				case 'Sphere':
 					object = new THREE.SphereGeometry(node.radius);
+					object.computeVertexNormals();
 					break;
 
 				case 'IndexedFaceSet':

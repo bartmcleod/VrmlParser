@@ -1,0 +1,80 @@
+#VRML V2.0 utf8
+
+# This file serves to test whether computeVertexNormals works well with the triangulation algorithm we use
+# Or put otherwise, is our triangulation good enough?
+# It represent a square with a square hole in the middle.
+# It renders beautifully, so the triangulation seems to be ok.
+# This leads to the conclusion that the old VRML models I handcoded twenty years ago had many problems.
+# If you want to fix the models, you will need something like an analyzer tool, which draws a wireframe and facenormals
+
+NavigationInfo {
+
+}
+
+
+Viewpoint {
+    fieldOfView    1
+    jump           TRUE
+    orientation    0 0 1 0
+    position       0 0 10
+
+    description    "Positive z"
+}
+
+DirectionalLight {
+    ambientIntensity  0
+    color             1 1 0.9
+    direction         0.5 -1.5 -1
+    intensity         2
+    on                TRUE
+}
+
+DirectionalLight {
+    ambientIntensity  0
+    color             1 1 0.9
+    direction         -0.5 1 1
+    intensity        2
+    on                TRUE
+}
+
+Transform {
+	children [
+		Shape {
+            appearance Appearance {
+                material Material {
+                  diffuseColor 1 1 0
+                }
+            }
+            geometry IndexedFaceSet {
+                creaseAngle 0.5
+                coord  Coordinate {
+                    point [
+                        #points for main square #the comments ruin the parsing of the points
+                        -1 -1 0, #0
+                        2 -1 0,
+                        2 2 0,
+                        -1 2 0, #3
+                        # points for square hole(frontal) # this comments ruins it! It does not parse correctly
+                        0 0 0,
+                        1 0 0,
+                        1 1 0,
+                        0 1 0, #7
+
+                    ]
+                }
+                normal            NULL
+                solid FALSE
+
+                ccw               TRUE
+                coordIndex  [
+                    # bottom polygon (we use for equal polygons, because that's the laziest way to do it)
+                    0, 1, 5, 4, -1,
+                    1, 2, 6, 5, -1,
+                    7, 6, 2, 3, -1,
+                    0, 4, 7, 3, -1,
+                ]
+            }
+        }
+	]
+}
+

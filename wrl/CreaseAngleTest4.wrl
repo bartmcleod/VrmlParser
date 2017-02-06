@@ -1,0 +1,93 @@
+#VRML V2.0 utf8
+
+# This represents a solid green box, built as an IndexedFaceSet
+# All edges should be sharply rendered
+# As a comparison the is a red box in the scene. They should look the same.
+# They actually _do_ look the same, when for both of them, vertexNormals are computed.
+# @todo: add a pre-triangulated shape, because it might render better
+# @todo: compare clockwise and counterclockwise, to find errors in their processing algorithm
+# @todo Why does vaneyck.wrl render strangely? It is built badly, or is the face duplication algortithm wrong?
+# try a cylinder in CreaseAngleTest5.wrl
+
+NavigationInfo {
+
+}
+
+Viewpoint {
+    fieldOfView    1
+    jump           TRUE
+    orientation    0 -0.3 -1 0
+    position       0.5 1.7 5
+    description    "Default"
+}
+
+DirectionalLight {
+    color             1 1 1
+    direction         0 0 1
+    intensity         1
+    on                TRUE
+}
+
+
+Transform {
+	children [
+        DEF schoorsteen	Shape {
+            appearance Appearance {
+                material         Material {
+                    diffuseColor    0 1 0
+                    transparency    0
+                    emissiveColor   0 0.2 0
+                }
+            }
+            geometry IndexedFaceSet {
+				coord  Coordinate {	#default NULL
+					point [
+                        0 0 0, #0
+                        1 0 0,
+                        1 1 0,
+                        0 1 0, #3 #rear
+
+                        0 0 1, #4
+                        1 0 1,
+                        1 1 1,
+                        0 1 1, #7 #front
+                    ]
+                }
+				ccw               TRUE
+				coordIndex  [
+				    3, 2, 1, 0, -1, #rear
+				    4, 5, 6, 7, -1, #front
+				    0, 4, 7, 3, -1, #side on left
+				    1, 2, 6, 5, -1, #side on right
+				    2, 3, 7, 6, -1, #top
+				    0, 1, 5, 4, -1, #bottom
+
+
+                ]     #default []
+				creaseAngle 0.2
+			}
+		}
+	]
+}
+
+Transform {
+    children Shape {
+        appearance Appearance {
+            material         Material {
+                diffuseColor    1 0 0
+                transparency    0
+                emissiveColor   0.2 0 0
+            }
+        }
+        geometry Box {
+            size 1 1 1
+        }
+    }
+    translation 2 0.5 0.5
+
+}
+
+
+
+
+

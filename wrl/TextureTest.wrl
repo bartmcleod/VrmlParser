@@ -1,0 +1,87 @@
+#VRML V2.0 utf8
+
+NavigationInfo {
+
+}
+
+Viewpoint {
+    fieldOfView    1
+    jump           TRUE
+    orientation    0 0 -1 0
+    position       0 0 10
+    description    "Looking down z"
+}
+
+Viewpoint {
+    fieldOfView    1
+    jump           TRUE
+    orientation    0 0 1 0
+    position       0 0 -10
+    description    "Looking back from z"
+}
+
+DirectionalLight {
+    color             1 1 1
+    direction         1 1 -1
+    intensity         1
+    on                TRUE
+}
+
+Transform {
+    center		0 0 0
+    children		[
+
+        Shape {
+            appearance Appearance {
+                material Material {
+                    ambientIntensity  0.2
+                    diffuseColor      0.8 0.8 0.8
+                    emissiveColor     0 0 0
+                    shininess         0.2
+                    specularColor     0 0 0
+                    transparency      0
+                }
+                texture ImageTexture {
+                    url     ["wrl/images/rondleiding-256x128.jpg"]
+                    repeatS FALSE
+                    repeatT FALSE
+                }
+                textureTransform  TextureTransform {
+                    center      0 0
+                    rotation    0
+                    scale       1 1
+                    translation 0 0
+                }
+
+            }
+
+            geometry IndexedFaceSet {
+                color             Color {
+                    color  []
+                }
+                coord  Coordinate {	#default NULL
+                    point [
+                        0	0	0,
+                        1	0	0,
+                        1	0.6	0,
+                        0	0.6	0,
+                    ]
+                }
+                normal            Normal {
+                    vector  []
+                }
+
+                ccw               TRUE
+                colorIndex        []
+                colorPerVertex    TRUE
+                convex            TRUE
+                coordIndex  [0,1,2,3,-1]     #default []
+                creaseAngle       0
+                normalIndex       []
+                normalPerVertex   TRUE
+                solid             TRUE
+            }
+        }
+    ]
+
+}
