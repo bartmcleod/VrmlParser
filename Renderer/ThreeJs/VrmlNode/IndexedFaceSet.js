@@ -190,6 +190,19 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 		}
 		return face[ abc ];
 	}
+
+	var _edgeIsSharp  = function (face1, face2) {
+		// calculate angle
+		var angle = face1.normal.angleTo(face2.normal);
+
+		// default creaseAngle
+		var creaseAngle = 0.5;
+
+		if ( node.has('creaseAngle') ) {
+			creaseAngle = node.creaseAngle;
+		}
+		return angle > creaseAngle;
+	}
 	/**
 	 * @todo there is a challenge here.
 	 * I tested this with squares and
@@ -211,7 +224,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 	 * @param indices
 	 * @private
 	 */
-	var _swapVertices    = function (index, swapIndex, index2, swapIndex2, triggerFace, keepFace) {
+	var _swapVertices = function (index, swapIndex, index2, swapIndex2, triggerFace, keepFace) {
 		scope.log('Swapping vertex ' + index + ' for ' + swapIndex);
 		scope.log('Swapping vertex ' + index2 + ' for ' + swapIndex2);
 		scope.log('triggerFace:');
@@ -229,8 +242,6 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 
 		var face;
 		var swapped;
-		var edgeIsSharp;
-		var sharesNoEdge;
 
 		for ( var i = 0; i < combinedFaces.length; i ++ ) {
 			swapped = false;
@@ -245,7 +256,6 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 			/* The vertex must be swapped on the face if it has no edge which is the same as the edge with the triggerKey,
 			 * because the triggerKey describes a sharp edge, which should remain sharp. Swapping is only done for
 			 * smoot edges */
-			edgeIsSharp = false;
 
 			var swappedForA = _getSwappedIndex(face, 'a', index, swapIndex, index2, swapIndex2);
 			var swappedForB = _getSwappedIndex(face, 'b', index, swapIndex, index2, swapIndex2);
@@ -275,19 +285,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 				continue;
 			}
 
-			// if two vertices are the same as that of the triggerFace, this face shares an edge with it
-			sharesNoEdge = theSame < 2;
-
-			if ( sharesNoEdge ) {
-				scope.log('Shares no edge, skipping');
-				scope.log(face);
-				//continue;
-			}
-
-
-
-			// @todo: at present: edge is never sharp??
-			if ( edgeIsSharp ) {
+			if ( _edgeIsSharp(face, triggerFace) ) {
 				scope.log('Sharp edge, skipping:');
 				scope.log(face);
 				continue;
@@ -455,16 +453,6 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 
 			var face2 = combinations[ j ].combinedFaces[ 1 ];
 
-			// calculate angle
-			var angle = face1.normal.angleTo(face2.normal);
-
-			// default creaseAngle
-			var creaseAngle = 0.5;
-
-			if ( node.has('creaseAngle') ) {
-				creaseAngle = node.creaseAngle;
-			}
-
 			// a sharp edge will have to be duplicated by rendering one of the faces on duplicated vertices
 
 			/*
@@ -474,9 +462,8 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 			// default 'smooth'
 			combinations[ j ].edge = 'smooth';
 
-			if ( angle > creaseAngle ) {
+			if ( _edgeIsSharp(face1, face2) ) {
 				combinations[ j ].edge = 'sharp';
-				scope.log('Duplicating because angle ' + angle + ' is larger than creaseAngle ' + creaseAngle);
 
 				// duplicate the vertices and redraw face2 with the new vertices
 				_duplicateVertices(a, face2, face1);
