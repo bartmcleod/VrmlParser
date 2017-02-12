@@ -11,9 +11,8 @@ VrmlParser.Renderer.ThreeJs.VrmlNode[ 'IndexedFaceSet' ] = function (originalNod
 }
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function () {
-	var object = new THREE.Object3D();
-	var node   = this.node;
-	var scope  = this;
+	var node  = this.node;
+	var scope = this;
 
 	// @todo: separate the logic for duplicating edges into a separate component,
 	// because it will have to be reused in Extrusion and ElevationGrid
@@ -221,12 +220,12 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 		// to avoid searching for it, we kept a registry per vertex telling in which faces is appears
 		// in all of those faces, swap the vertex
 		/** @var Array faces **/
-		var faces = verticesRegistry[ parseInt(index) ];
+		var faces  = verticesRegistry[ parseInt(index) ];
 		var faces2 = verticesRegistry[ parseInt(index2) ];
 
 		var combinedFaces = faces.concat(faces2);
-		scope.log('combinedFaces:');
-		scope.log(combinedFaces);
+		// scope.log('combinedFaces:');
+		// scope.log(combinedFaces);
 
 		var face;
 		var swapped;
@@ -237,7 +236,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 			swapped = false;
 			face    = combinedFaces[ i ];
 
-			if (face == keepFace) {
+			if ( face == keepFace ) {
 				continue;
 			}
 			// scope.log('faces buffer:');
@@ -248,30 +247,30 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 			 * smoot edges */
 			edgeIsSharp = false;
 
-			var swappedForA           = _getSwappedIndex(face, 'a', index, swapIndex, index2, swapIndex2);
-			var swappedForB           = _getSwappedIndex(face, 'b', index, swapIndex, index2, swapIndex2);
-			var swappedForC           = _getSwappedIndex(face, 'c', index, swapIndex, index2, swapIndex2);
+			var swappedForA = _getSwappedIndex(face, 'a', index, swapIndex, index2, swapIndex2);
+			var swappedForB = _getSwappedIndex(face, 'b', index, swapIndex, index2, swapIndex2);
+			var swappedForC = _getSwappedIndex(face, 'c', index, swapIndex, index2, swapIndex2);
 
 			scope.log('Swapped for:');
-			scope.log([swappedForA, swappedForB, swappedForC]);
-			scope.log('triggerFace:');
-			scope.log(triggerFace);
+			scope.log([ swappedForA, swappedForB, swappedForC ]);
+			// scope.log('triggerFace:');
+			// scope.log(triggerFace);
 
 			/* If two indexes would be shared after a swap, the triangles share an edge
 			 * If three indexes are the same, the trangles are the same */
 			var theSame = 0;
-			
-			if (swappedForA == triggerFace.a || swappedForA == triggerFace.b || swappedForA == triggerFace.c) {
-				theSame++;
-			}			
-			if (swappedForB == triggerFace.a || swappedForB == triggerFace.b || swappedForB == triggerFace.c) {
-				theSame++;
-			}			
-			if (swappedForC == triggerFace.a || swappedForC == triggerFace.b || swappedForC == triggerFace.c) {
-				theSame++;
+
+			if ( swappedForA == triggerFace.a || swappedForA == triggerFace.b || swappedForA == triggerFace.c ) {
+				theSame ++;
+			}
+			if ( swappedForB == triggerFace.a || swappedForB == triggerFace.b || swappedForB == triggerFace.c ) {
+				theSame ++;
+			}
+			if ( swappedForC == triggerFace.a || swappedForC == triggerFace.b || swappedForC == triggerFace.c ) {
+				theSame ++;
 			}
 
-			if (theSame === 3) {
+			if ( theSame === 3 ) {
 				scope.log('Same face, nothing to do here.');
 				continue;
 			}
@@ -279,14 +278,17 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 			// if two vertices are the same as that of the triggerFace, this face shares an edge with it
 			sharesNoEdge = theSame < 2;
 
-			// when is the edge sharp?
+			if ( sharesNoEdge ) {
+				scope.log('Shares no edge, skipping');
+				scope.log(face);
+				//continue;
+			}
 
-			if ( edgeIsSharp || sharesNoEdge ) {
-				if (sharesNoEdge) {
-					scope.log('Shares no edge, skipping');
-				} else {
-					scope.log('Sharp edge, skipping:');
-				}
+
+
+			// @todo: at present: edge is never sharp??
+			if ( edgeIsSharp ) {
+				scope.log('Sharp edge, skipping:');
 				scope.log(face);
 				continue;
 			} else {
@@ -489,6 +491,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 	this.log(object.faces);
 
 	object.computeBoundingSphere();
+	//analyzer.labelVertices(object);
 	return object;
 
 };

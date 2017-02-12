@@ -348,6 +348,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 					if ( node.has('geometry') ) {
 						object.geometry = parseNode(node.geometry);
+
+						// @todo turn this off after figuring out face duplication for sharp edges
+						if (scope.debug) {
+							analyzer.labelVertices(object);
+						}
 					}
 
 					if ( node.has('appearance') ) {
