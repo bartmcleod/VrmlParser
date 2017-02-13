@@ -20,7 +20,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.PointLight.prototype.parse = function (scen
 		color = new THREE.Color(c.x, c.y, c.z);
 	}
 
-	var pointLight = new THREE.PointLight(color ? color : '0xaaaaaa');
+	var pointLight = new THREE.PointLight(color ? color : 0xaaaaaa);
 	//PointLight( color, intensity, distance, decay )
 
 	if ( this.node.has('on') ) {
