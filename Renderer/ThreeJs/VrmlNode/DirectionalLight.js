@@ -20,7 +20,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.DirectionalLight.prototype.parse = function
 		color = new THREE.Color(c.x, c.y, c.z);
 	}
 
-	var dirLight = new THREE.DirectionalLight(color ? color : '0xaaaaaa');
+	var dirLight = new THREE.DirectionalLight(color ? color : 0xaaaaaa);
 
 	if ( this.node.has('direction') ) {
 		// From the docs: the orientation / direction of the light is calculated from its position to its target.
