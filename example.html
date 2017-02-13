@@ -65,6 +65,7 @@
 <script src="Renderer/ThreeJs/Animation.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode.js"></script>
 <script src="Renderer/ThreeJs/Analyzer.js"></script>
+<script src="Renderer/ThreeJs/EdgeDuplicator.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/Interpolator.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/OrientationInterpolator.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/PositionInterpolator.js"></script>
@@ -86,7 +87,7 @@
 
 
 <script>
-    var debug = true;
+    var debug = false;
 	var container;
 
 	var camera, controls, scene, renderer;
@@ -198,7 +199,7 @@
 		// VRML parser example:
 		var xhrLoader = new THREE.XHRLoader();
 		// onLoad, onProgress, onError
-		xhrLoader.load('wrl/CreaseAngleTest5.wrl', function (data) {
+		xhrLoader.load('wrl/house.wrl', function (data) {
 			try {
 				var tree = vrmlParser.parse(data);
 			} catch ( e ) {
