@@ -212,6 +212,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 				return false;
 			}
 
+			var duplicator = new VrmlParser.Renderer.ThreeJs.EdgeDuplicator(scope.debug);
+
 			// for syntactic sugar only:
 			node.has = has;
 
@@ -549,29 +551,38 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 				case 'Box':
 					var s          = node.size;
 					object         = new THREE.BoxGeometry(s.x, s.y, s.z);
-					object.computeVertexNormals();
+					// you probably don't want smooth edge anywhere on a box, so code below makes no sense
+					// object.computeFaceNormals();
+					// duplicator.duplicateSharpEdges(object);
+					// object.computeVertexNormals();
 					break;
 
 				case 'Cylinder':
 					object = new THREE.CylinderGeometry(node.radius, node.radius, node.height, 36);
 					object.computeFaceNormals();
+					duplicator.duplicateSharpEdges(object);
 					object.computeVertexNormals();
 					break;
 
 				case 'Cone':
 					// @todo: see if you can use ConeGeometry
 					object = new THREE.CylinderGeometry(node.topRadius, node.bottomRadius, node.height);
+					object.computeFaceNormals();
+					duplicator.duplicateSharpEdges(object);
 					object.computeVertexNormals();
 					break;
 
 				case 'Sphere':
 					object = new THREE.SphereGeometry(node.radius);
+					object.computeFaceNormals();
+					duplicator.duplicateSharpEdges(object);
 					object.computeVertexNormals();
 					break;
 
 				case 'IndexedFaceSet':
 					var indexedFaceSet = new VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet(node, scope.debug);
 					object = indexedFaceSet.parse();
+					// indexed faces set uses duplicator internally, no need to do anything here
 					break;
 
 				case 'IndexedLineSet':
