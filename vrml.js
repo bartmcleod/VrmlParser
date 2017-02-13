@@ -283,32 +283,27 @@ vrmlParser = (function() {
         peg$c105 = { type: "literal", value: "USE", description: "\"USE\"" },
         peg$c106 = "-1",
         peg$c107 = { type: "literal", value: "-1", description: "\"-1\"" },
-        peg$c108 = "",
-        peg$c109 = "\n",
-        peg$c110 = { type: "literal", value: "\n", description: "\"\\n\"" },
-        peg$c111 = "\t",
-        peg$c112 = { type: "literal", value: "\t", description: "\"\\t\"" },
-        peg$c113 = function(points) { return points; },
-        peg$c114 = function(i) { return i },
-        peg$c115 = function(uri) { return uri; },
-        peg$c116 = /^[^"]/,
-        peg$c117 = { type: "class", value: "[^\"]", description: "[^\"]" },
-        peg$c118 = "jpg",
-        peg$c119 = { type: "literal", value: "jpg", description: "\"jpg\"" },
-        peg$c120 = "jpeg",
-        peg$c121 = { type: "literal", value: "jpeg", description: "\"jpeg\"" },
-        peg$c122 = "gif",
-        peg$c123 = { type: "literal", value: "gif", description: "\"gif\"" },
-        peg$c124 = "wrl",
-        peg$c125 = { type: "literal", value: "wrl", description: "\"wrl\"" },
-        peg$c126 = function(i, dot, ext) { return i + dot + ext; },
-        peg$c127 = function(s) { return  s.join(''); },
-        peg$c128 = "\"",
-        peg$c129 = { type: "literal", value: "\"", description: "\"\\\"\"" },
-        peg$c130 = /^[0-9]/,
-        peg$c131 = { type: "class", value: "[0-9]", description: "[0-9]" },
-        peg$c132 = /^[0-9a-f]/i,
-        peg$c133 = { type: "class", value: "[0-9a-f]i", description: "[0-9a-f]i" },
+        peg$c108 = function(points) { return points; },
+        peg$c109 = function(i) { return i },
+        peg$c110 = function(uri) { return uri; },
+        peg$c111 = /^[^"]/,
+        peg$c112 = { type: "class", value: "[^\"]", description: "[^\"]" },
+        peg$c113 = "jpg",
+        peg$c114 = { type: "literal", value: "jpg", description: "\"jpg\"" },
+        peg$c115 = "jpeg",
+        peg$c116 = { type: "literal", value: "jpeg", description: "\"jpeg\"" },
+        peg$c117 = "gif",
+        peg$c118 = { type: "literal", value: "gif", description: "\"gif\"" },
+        peg$c119 = "wrl",
+        peg$c120 = { type: "literal", value: "wrl", description: "\"wrl\"" },
+        peg$c121 = function(i, dot, ext) { return i + dot + ext; },
+        peg$c122 = function(s) { return  s.join(''); },
+        peg$c123 = "\"",
+        peg$c124 = { type: "literal", value: "\"", description: "\"\\\"\"" },
+        peg$c125 = /^[0-9]/,
+        peg$c126 = { type: "class", value: "[0-9]", description: "[0-9]" },
+        peg$c127 = /^[0-9a-f]/i,
+        peg$c128 = { type: "class", value: "[0-9a-f]i", description: "[0-9a-f]i" },
 
         peg$currPos          = 0,
         peg$savedPos         = 0,
@@ -2627,7 +2622,7 @@ vrmlParser = (function() {
     }
 
     function peg$parseface() {
-      var s0, s1, s2, s3;
+      var s0, s1, s2, s3, s4, s5;
 
       s0 = peg$currPos;
       s1 = [];
@@ -2649,47 +2644,32 @@ vrmlParser = (function() {
           if (peg$silentFails === 0) { peg$fail(peg$c107); }
         }
         if (s2 !== peg$FAILED) {
-          s3 = peg$c108;
-          if (s3 === peg$FAILED) {
-            if (input.charCodeAt(peg$currPos) === 32) {
-              s3 = peg$c21;
+          s3 = peg$parsews();
+          if (s3 !== peg$FAILED) {
+            if (input.charCodeAt(peg$currPos) === 44) {
+              s4 = peg$c91;
               peg$currPos++;
             } else {
-              s3 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c22); }
+              s4 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c92); }
             }
-            if (s3 === peg$FAILED) {
-              if (input.charCodeAt(peg$currPos) === 44) {
-                s3 = peg$c91;
-                peg$currPos++;
+            if (s4 === peg$FAILED) {
+              s4 = null;
+            }
+            if (s4 !== peg$FAILED) {
+              s5 = peg$parsews();
+              if (s5 !== peg$FAILED) {
+                peg$savedPos = s0;
+                s1 = peg$c108(s1);
+                s0 = s1;
               } else {
-                s3 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c92); }
+                peg$currPos = s0;
+                s0 = peg$FAILED;
               }
-              if (s3 === peg$FAILED) {
-                if (input.charCodeAt(peg$currPos) === 10) {
-                  s3 = peg$c109;
-                  peg$currPos++;
-                } else {
-                  s3 = peg$FAILED;
-                  if (peg$silentFails === 0) { peg$fail(peg$c110); }
-                }
-                if (s3 === peg$FAILED) {
-                  if (input.charCodeAt(peg$currPos) === 9) {
-                    s3 = peg$c111;
-                    peg$currPos++;
-                  } else {
-                    s3 = peg$FAILED;
-                    if (peg$silentFails === 0) { peg$fail(peg$c112); }
-                  }
-                }
-              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
             }
-          }
-          if (s3 !== peg$FAILED) {
-            peg$savedPos = s0;
-            s1 = peg$c113(s1);
-            s0 = s1;
           } else {
             peg$currPos = s0;
             s0 = peg$FAILED;
@@ -2774,7 +2754,7 @@ vrmlParser = (function() {
         }
         if (s2 !== peg$FAILED) {
           peg$savedPos = s0;
-          s1 = peg$c114(s1);
+          s1 = peg$c109(s1);
           s0 = s1;
         } else {
           peg$currPos = s0;
@@ -2811,7 +2791,7 @@ vrmlParser = (function() {
                       s9 = peg$parsews();
                       if (s9 !== peg$FAILED) {
                         peg$savedPos = s0;
-                        s1 = peg$c115(s5);
+                        s1 = peg$c110(s5);
                         s0 = s1;
                       } else {
                         peg$currPos = s0;
@@ -2858,21 +2838,21 @@ vrmlParser = (function() {
 
       s0 = peg$currPos;
       s1 = [];
-      if (peg$c116.test(input.charAt(peg$currPos))) {
+      if (peg$c111.test(input.charAt(peg$currPos))) {
         s2 = input.charAt(peg$currPos);
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c117); }
+        if (peg$silentFails === 0) { peg$fail(peg$c112); }
       }
       while (s2 !== peg$FAILED) {
         s1.push(s2);
-        if (peg$c116.test(input.charAt(peg$currPos))) {
+        if (peg$c111.test(input.charAt(peg$currPos))) {
           s2 = input.charAt(peg$currPos);
           peg$currPos++;
         } else {
           s2 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c117); }
+          if (peg$silentFails === 0) { peg$fail(peg$c112); }
         }
       }
       if (s1 !== peg$FAILED) {
@@ -2884,43 +2864,43 @@ vrmlParser = (function() {
           if (peg$silentFails === 0) { peg$fail(peg$c59); }
         }
         if (s2 !== peg$FAILED) {
-          if (input.substr(peg$currPos, 3) === peg$c118) {
-            s3 = peg$c118;
+          if (input.substr(peg$currPos, 3) === peg$c113) {
+            s3 = peg$c113;
             peg$currPos += 3;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c119); }
+            if (peg$silentFails === 0) { peg$fail(peg$c114); }
           }
           if (s3 === peg$FAILED) {
-            if (input.substr(peg$currPos, 4) === peg$c120) {
-              s3 = peg$c120;
+            if (input.substr(peg$currPos, 4) === peg$c115) {
+              s3 = peg$c115;
               peg$currPos += 4;
             } else {
               s3 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c121); }
+              if (peg$silentFails === 0) { peg$fail(peg$c116); }
             }
             if (s3 === peg$FAILED) {
-              if (input.substr(peg$currPos, 3) === peg$c122) {
-                s3 = peg$c122;
+              if (input.substr(peg$currPos, 3) === peg$c117) {
+                s3 = peg$c117;
                 peg$currPos += 3;
               } else {
                 s3 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c123); }
+                if (peg$silentFails === 0) { peg$fail(peg$c118); }
               }
               if (s3 === peg$FAILED) {
-                if (input.substr(peg$currPos, 3) === peg$c124) {
-                  s3 = peg$c124;
+                if (input.substr(peg$currPos, 3) === peg$c119) {
+                  s3 = peg$c119;
                   peg$currPos += 3;
                 } else {
                   s3 = peg$FAILED;
-                  if (peg$silentFails === 0) { peg$fail(peg$c125); }
+                  if (peg$silentFails === 0) { peg$fail(peg$c120); }
                 }
               }
             }
           }
           if (s3 !== peg$FAILED) {
             peg$savedPos = s0;
-            s1 = peg$c126(s1, s2, s3);
+            s1 = peg$c121(s1, s2, s3);
             s0 = s1;
           } else {
             peg$currPos = s0;
@@ -2947,21 +2927,21 @@ vrmlParser = (function() {
         s2 = peg$parsequote();
         if (s2 !== peg$FAILED) {
           s3 = [];
-          if (peg$c116.test(input.charAt(peg$currPos))) {
+          if (peg$c111.test(input.charAt(peg$currPos))) {
             s4 = input.charAt(peg$currPos);
             peg$currPos++;
           } else {
             s4 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c117); }
+            if (peg$silentFails === 0) { peg$fail(peg$c112); }
           }
           while (s4 !== peg$FAILED) {
             s3.push(s4);
-            if (peg$c116.test(input.charAt(peg$currPos))) {
+            if (peg$c111.test(input.charAt(peg$currPos))) {
               s4 = input.charAt(peg$currPos);
               peg$currPos++;
             } else {
               s4 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c117); }
+              if (peg$silentFails === 0) { peg$fail(peg$c112); }
             }
           }
           if (s3 !== peg$FAILED) {
@@ -2970,7 +2950,7 @@ vrmlParser = (function() {
               s5 = peg$parsews();
               if (s5 !== peg$FAILED) {
                 peg$savedPos = s0;
-                s1 = peg$c127(s3);
+                s1 = peg$c122(s3);
                 s0 = s1;
               } else {
                 peg$currPos = s0;
@@ -3000,11 +2980,11 @@ vrmlParser = (function() {
       var s0;
 
       if (input.charCodeAt(peg$currPos) === 34) {
-        s0 = peg$c128;
+        s0 = peg$c123;
         peg$currPos++;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c129); }
+        if (peg$silentFails === 0) { peg$fail(peg$c124); }
       }
 
       return s0;
@@ -3013,12 +2993,12 @@ vrmlParser = (function() {
     function peg$parseDIGIT() {
       var s0;
 
-      if (peg$c130.test(input.charAt(peg$currPos))) {
+      if (peg$c125.test(input.charAt(peg$currPos))) {
         s0 = input.charAt(peg$currPos);
         peg$currPos++;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c131); }
+        if (peg$silentFails === 0) { peg$fail(peg$c126); }
       }
 
       return s0;
@@ -3027,12 +3007,12 @@ vrmlParser = (function() {
     function peg$parseHEXDIG() {
       var s0;
 
-      if (peg$c132.test(input.charAt(peg$currPos))) {
+      if (peg$c127.test(input.charAt(peg$currPos))) {
         s0 = input.charAt(peg$currPos);
         peg$currPos++;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c133); }
+        if (peg$silentFails === 0) { peg$fail(peg$c128); }
       }
 
       return s0;
