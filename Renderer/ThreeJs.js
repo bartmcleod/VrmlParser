@@ -20,7 +20,9 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 	constructor: VrmlParser.Renderer.ThreeJs,
 
 	log: function () {
-		console.log.apply(console, arguments);
+		if (this.debug) {
+			console.log.apply(console, arguments);
+		}
 	},
 
 	warn: function () {
@@ -354,6 +356,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 						// @todo turn this off after figuring out face duplication for sharp edges
 						if (scope.debug) {
 							analyzer.labelVertices(object);
+							analyzer.labelFaces(object);
 						}
 					}
 
@@ -407,11 +410,22 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 								});
 
 							} else {
-								//scope.log('Mesh object');
 
-								// @todo: we use a MeshPhongMaterial for meshes, but is this always appropriate for VRML?
-								material = new THREE.MeshLambertMaterial();
-								// material.shading = THREE.SmoothShading;
+								if (
+									vrmlMaterial.has('specularColor')
+									&&  (
+										vrmlMaterial.specularColor.x != 0
+										|| vrmlMaterial.specularColor.y != 0
+										|| vrmlMaterial.specularColor.z != 0
+									)) {
+
+									material = new THREE.MeshPhongMaterial();
+
+								} else {
+
+									material = new THREE.MeshLambertMaterial();
+
+								}
 
 								if ( vrmlMaterial.has('diffuseColor') ) {
 
@@ -487,6 +501,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 							//if ( false === node.geometry.node.solid ) {
 
 							object.material.side = THREE.DoubleSide;
+							// object.material.side = THREE.FrontSide;
 
 							//}
 						}

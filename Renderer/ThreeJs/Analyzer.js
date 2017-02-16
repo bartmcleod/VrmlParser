@@ -18,21 +18,32 @@ VrmlParser.Renderer.ThreeJs.Analyzer.prototype.labelVertices = function(object) 
 	var labelsPerVertex = {};
 	for (var i = 0; i < geometry.vertices.length; i++)
 	{
-		var spritey = this.makeTextSprite( " " + i + " ", { fontsize: 32, backgroundColor: {r:255, g:100, b:100, a:1} } );
+		var spritey = this.makeTextSprite( " " + i + " ", { fontsize: 14, backgroundColor: {r:255, g:100, b:100, a:1} } );
 		var vertex = geometry.vertices[i];
 		// when more than one label is drawn for a given vertex, it will be placed `spacing` m closer to the viewer than the previous label
 		key = vertex.x + '_' + vertex.y + '_' + vertex.z;
 		labelsPerVertex[key] = labelsPerVertex[key] + 1 || 0;
-		spritey.position.set(vertex.x, vertex.y, vertex.z + labelsPerVertex[key] * spacing);
+		labelsPerVertex[key] = 0;
+		spritey.position.set(0.5 + vertex.x + labelsPerVertex[key] * spacing, vertex.y, vertex.z);
 		object.add( spritey );
 	}
 };
 
-VrmlParser.Renderer.ThreeJs.Analyzer.prototype.labelFaces = function(geometry) {
+VrmlParser.Renderer.ThreeJs.Analyzer.prototype.labelFaces = function(object) {
+	var geometry = object.geometry;
 	for (var i = 0; i < geometry.faces.length; i++)
 	{
-		var spritey = this.makeTextSprite( " " + i + " ", { fontsize: 32, backgroundColor: {r:100, g:100, b:255, a:1} } );
-		spritey.position = geometry.faces[i].centroid.clone().multiplyScalar(1.1);
+		var face = geometry.faces[i];
+		var flatIndexes = ' [' + face.a + ', ' + face.b + ', ' + face.c + '] ';
+		var spritey = this.makeTextSprite( flatIndexes, { fontsize: 16, backgroundColor: {r:100, g:100, b:255, a:1} } );
+
+		var centroid = new THREE.Vector3();
+		centroid.add(geometry.vertices[face.a]);
+		centroid.add(geometry.vertices[face.b]);
+		centroid.add(geometry.vertices[face.c]);
+		centroid.divideScalar(3);
+
+		spritey.position.set(centroid.x + 1, centroid.y, centroid.z);
 		scene.add( spritey );
 	}
 };
