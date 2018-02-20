@@ -15,7 +15,6 @@
 
 VrmlParser.Renderer.ThreeJs[ 'SmoothEdges' ] = function (debug) {
 	this.debug       = debug;
-	this.facesBuffer = {};
 
 	/**
 	 * Utility to easily switch logging on and off with the debug flag.
@@ -31,6 +30,9 @@ VrmlParser.Renderer.ThreeJs[ 'SmoothEdges' ] = function (debug) {
 VrmlParser.Renderer.ThreeJs.SmoothEdges.prototype._calcNormal = function (normals, normal, angle) {
 	let allowed = normals.filter(n => n.angleTo(normal) < angle);
 
+	if(0===allowed.length) {
+		return [];
+	}
 	return allowed.reduce((a, b) => a.clone().add(b)).normalize();
 };
 
