@@ -1,5 +1,6 @@
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
+ * Credits: Vitaliy Stoliarov https://github.com/Ni55aN
  * @since February 20, 2018
  *
  * SmoothEdges uses the example linked below to produce smooth face rendering based on
