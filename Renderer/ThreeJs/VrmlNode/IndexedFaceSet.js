@@ -11,8 +11,8 @@ VrmlParser.Renderer.ThreeJs.VrmlNode[ 'IndexedFaceSet' ] = function (originalNod
 }
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function () {
-	var duplicator = new VrmlParser.Renderer.ThreeJs.EdgeDuplicator(this.debug);
-	var node       = this.node;
+	var smooth = new VrmlParser.Renderer.ThreeJs.SmoothEdges(this.debug);
+	var node   = this.node;
 
 	object = new THREE.Geometry();
 
@@ -111,19 +111,16 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 
 	}
 
-	// by computing face normals here, we will have normals when duplicating faces,
-	object.computeFaceNormals();
-
 	var creaseAngle = node.has('creaseAngle') ? node.creaseAngle : false;
 
 	// if no creaseAngle, the VRML author probably wasn't intersted in smooth rendering, so don't!
-	if (false !== creaseAngle) {
-		duplicator.duplicateSharpEdges(object, creaseAngle);
-
-		object.computeVertexNormals();
+	if ( false !== creaseAngle ) {
+		smooth.smooth(object, creaseAngle);
+	} else {
+		// only compute face normals, perform no smoothing
+		object.computeFaceNormals();
 	}
-	// this.log(object.faces);
-	//
+
 	object.computeBoundingSphere();
 	return object;
 
