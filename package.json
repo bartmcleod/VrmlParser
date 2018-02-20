@@ -17,10 +17,10 @@
     "three"
   ],
   "dependencies": {
-    "three": "*",
+    "fs": "0.0.2",
     "pegjs-require": "*",
-    "tween.js": "*",
-    "fs": "0.0.2"
+    "three": "^0.90.0",
+    "tween.js": "^16.6.0"
   },
   "license": "MIT",
   "homepage": "https://github.com/bartmcleod/VrmlParser#readme",
