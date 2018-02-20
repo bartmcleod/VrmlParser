@@ -197,9 +197,9 @@
 		}; // key value store of cameras based on VRML viewpoint nodes, stored by their name.
 
 		// VRML parser example:
-		var xhrLoader = new THREE.XHRLoader();
+		var fileLoader = new THREE.FileLoader();
 		// onLoad, onProgress, onError
-		xhrLoader.load('wrl/house.wrl', function (data) {
+		fileLoader.load('wrl/house.wrl', function (data) {
 			try {
 				var tree = vrmlParser.parse(data);
 			} catch ( e ) {
