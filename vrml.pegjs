@@ -171,7 +171,7 @@ generic_property
     }
 
 identifier "identifier"
-	= ws? o:[A-Za-z0-9_]+ ws? { return o.join(''); }
+	= ws? o:[^0-9\-\+ '"#\,\.\[\]\{\}]p:[^ '"#\,\.\[\]\{\}]+ ws? { return o + p.join(''); }
 
 /* ----- Arrays (The VRML way) ----- */
 

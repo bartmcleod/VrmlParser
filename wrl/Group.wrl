@@ -1,0 +1,31 @@
+#VRML V2.0 utf8
+
+# This is a very basic PointSet with three points and a different color for each point.
+Transform {
+	children [
+	    Shape {
+            appearance Appearance {
+                material Material {
+                    diffuseColor 1 1 0
+                }
+            }
+            geometry PointSet {
+                coord  Coordinate {
+                    point [
+                        0 1 0,
+                        1 0 0,
+                        0 0 1,
+                    ]
+                }
+                color [
+                    1 0 0,
+                    0 1 0,
+                    0 0 1,
+                ]
+            }
+        }
+	]
+    rotation 0.4 0.2 0.1 0
+    translation 0 0 0
+}
+
