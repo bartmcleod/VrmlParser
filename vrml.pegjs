@@ -40,7 +40,7 @@ vrml
 
 /* ----- Node ------ */
 OrientationInterpolator
-    = name:(def name:identifier { return name; }) "OrientationInterpolator" begin_node properties:( keyValueForOrientationInterpolator / property)+ end_node
+    = name:(def ws name:identifier ws { return name; }) "OrientationInterpolator" begin_node properties:( KeyValueForOrientationInterpolator / property)+ end_node
     {
     	var n = {name:name, node: "OrientationInterpolator", isDefinition: true}
         for (var i=0; i < properties.length; i++) {
@@ -48,22 +48,24 @@ OrientationInterpolator
         }
         // store node for later re-use
         nodeDefinitions[name] = n;
+        n.type = "OrientationInterpolator";
         return n;
     }
 
-keyValueForOrientationInterpolator
+KeyValueForOrientationInterpolator
     = ws? "keyValue" begin_array quaternionArray:( q:(q:quaternion value_separator comment? {return q;})* lq:quaternion? comment? {if(lq)q.push(lq);return q;} ) end_array
     {
-        return {name: "keyValue", value: quaternionArray};
+        return {name: "keyValue", value: quaternionArray, type: "KeyValueForOrientationInterpolator"};
     }
 
 nodeDefinition
-    = ws name:(def ws name:identifier ws { return name; }) n:node
+    = ws def ws name:identifier ws n:node
     {
         n.name = name;
         n.isDefinition = true;
         // store node for later re-use
         nodeDefinitions[name] = n;
+        n.type = "nodeDefinition"
         return n;
     }
 
@@ -149,8 +151,6 @@ coordIndex
         return {name: "coordIndex", value: face};
     }
 
-
-
 pointArray
     = name:("point" / "vector") ws? begin_array comment? ws? pointArray:point+ comment? end_array ws?
     {
@@ -171,7 +171,7 @@ generic_property
     }
 
 identifier "identifier"
-	= ws? o:[^0-9\-\+ '"#\,\.\[\]\{\}]p:[^ '"#\,\.\[\]\{\}]+ ws? { return o + p.join(''); }
+	= o:[^0-9\-\+ '"#\,\.\[\]\{\}\r\n\t]p:[^ '"#\,\.\[\]\{\}\r\n\t]+ { return o + p.join('').trim(); }
 
 /* ----- Arrays (The VRML way) ----- */
 
