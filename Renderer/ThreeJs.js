@@ -20,7 +20,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 	constructor: VrmlParser.Renderer.ThreeJs,
 
 	log: function () {
-		if (this.debug) {
+		if ( this.debug ) {
 			console.log.apply(console, arguments);
 		}
 	},
@@ -114,9 +114,9 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 				var vec = {};
 
 				// push the vector at which the color changes
-				vec.y = direction * ( Math.cos(angles[ k ]) * radius );
+				vec.y = direction * (Math.cos(angles[ k ]) * radius);
 
-				vec.x = direction * ( Math.sin(angles[ k ]) * radius );
+				vec.x = direction * (Math.sin(angles[ k ]) * radius);
 
 				coord.push(vec);
 
@@ -127,7 +127,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 				f = geometry.faces[ i ];
 
-				n = ( f instanceof THREE.Face3 ) ? 3 : 4;
+				n = (f instanceof THREE.Face3) ? 3 : 4;
 
 				for ( var j = 0; j < n; j ++ ) {
 
@@ -166,7 +166,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 								aColor = colors[ index ];
 
 								// below is simple linear interpolation
-								t = Math.abs(p.y - A.y) / ( A.y - B.y );
+								t = Math.abs(p.y - A.y) / (A.y - B.y);
 
 								// to make it faster, you can only calculate this if the y coord changes, the color is the same for points with the same y
 								color = interpolateColors(aColor, bColor, t);
@@ -339,7 +339,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					object.position.set(0 - center.x, 0 - center.y, 0 - center.z);
 
 					// we me must also rotate the surrounding group to any rotation that applies to the original object
-					surroundingGroup.quaternion.setFromAxisAngle(new THREE.Vector3(r.x, r.y, r.z), r.radians);
+					surroundingGroup.quaternion.setFromAxisAngle(new THREE.Vector3(r.x, r.y, r.z).normalize(), r.radians);
 
 					surroundingGroup.add(object);
 					break;
@@ -354,7 +354,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 						object.geometry = parseNode(node.geometry);
 
 						// @todo turn this off after figuring out face duplication for sharp edges
-						if (scope.debug) {
+						if ( scope.debug ) {
 							analyzer.labelVertices(object);
 							analyzer.labelFaces(object);
 						}
@@ -413,11 +413,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 								if (
 									vrmlMaterial.has('specularColor')
-									&&  (
+									&& (
 										vrmlMaterial.specularColor.x != 0
 										|| vrmlMaterial.specularColor.y != 0
 										|| vrmlMaterial.specularColor.z != 0
-									)) {
+									) ) {
 
 									material = new THREE.MeshPhongMaterial();
 
@@ -444,7 +444,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 								}
 
 								// specular is only defined for phong material, so check!
-								if ( vrmlMaterial.has('specularColor') && undefined !== material.specular) {
+								if ( vrmlMaterial.has('specularColor') && undefined !== material.specular ) {
 
 									var specularColor = convertVectorToColor(vrmlMaterial.specularColor);
 
@@ -464,7 +464,10 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 								if ( appearance.has('texture') ) {
 
 									// ImageTexture node?
-									if ( undefined !== appearance.texture.node && appearance.texture.node === 'ImageTexture' ) {
+									if ( undefined !== appearance.texture.node
+										&& appearance.texture.node === 'ImageTexture'
+										&& undefined !== appearance.texture.url
+									) {
 
 										var imageUrl = appearance.texture.url[ 0 ];
 
@@ -564,8 +567,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					break;
 
 				case 'Box':
-					var s          = node.size;
-					object         = new THREE.BoxGeometry(s.x, s.y, s.z);
+					var s  = node.size;
+					object = new THREE.BoxGeometry(s.x, s.y, s.z);
 					break;
 
 				case 'Cylinder':
@@ -587,7 +590,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 				case 'IndexedFaceSet':
 					var indexedFaceSet = new VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet(node, scope.debug);
-					object = indexedFaceSet.parse();
+					object             = indexedFaceSet.parse();
 					// indexed faces set uses SmoothEdges internally, no need to do anything here
 					break;
 
