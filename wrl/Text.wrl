@@ -1,0 +1,37 @@
+#VRML V2.0 utf8
+
+Viewpoint {
+    fieldOfView    1
+    jump           TRUE
+    position       0 20 200
+    description    "See text"
+}
+
+Text {
+    string ["one", "two", "three"]
+    length [] # length for each string
+	maxExtent 0 # max length, horizontally for horizontal FontStyle, vertically for vertical FontStyle
+	fontStyle FontStyle {
+	    size 10
+	    topToBottom TRUE
+	    leftToRight TRUE
+	    spacing 1.5
+	    horizontal FALSE
+	}
+}
+
+DirectionalLight {
+    ambientIntensity  0
+    color             1 1 0.9
+    direction         0.5 -1.5 -1
+    intensity         1.8
+    on                TRUE
+}
+
+DirectionalLight {
+    ambientIntensity  0
+    color             1 1 0.9
+    direction         -0.5 1 0
+    intensity        1
+    on                TRUE
+}

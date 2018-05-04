@@ -224,6 +224,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 			var surroundingGroup = false;
 			// @todo: WIP refactor the switch to a class name with parse method for each node: parse(writer, node)
 			switch ( node.node ) {
+				case 'Text':
+					var text = new VrmlParser.Renderer.ThreeJs.VrmlNode.Text(node, scope.debug);
+					object         = text.parse();
+					break;
+
 				case 'PointLight':
 					var pointLight = new VrmlParser.Renderer.ThreeJs.VrmlNode.PointLight(node, scope.debug);
 					object         = pointLight.parse();

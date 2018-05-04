@@ -71,6 +71,7 @@
 <script src="Renderer/ThreeJs/VrmlNode/PositionInterpolator.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/DirectionalLight.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/PointLight.js"></script>
+<script src="Renderer/ThreeJs/VrmlNode/Text.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/Viewpoint.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/NavigationInfo.js"></script>
 <script src="Renderer/ThreeJs/VrmlNode/IndexedFaceSet.js"></script>
@@ -87,6 +88,7 @@
 
 
 <script>
+    VrmlParser.Renderer.ThreeJs.VrmlNode.Text.fontsDir = 'wrl/fonts';
     var debug = false;
 	var container;
 
@@ -155,8 +157,8 @@
 
 		scene = new THREE.Scene();
 
-//		var light = new THREE.AmbientLight(new THREE.Color(1,1,1), 0.1);
-//		scene.add(light);
+		// var light = new THREE.AmbientLight(new THREE.Color(1,1,1), 0.1);
+		// scene.add(light);
 
 		scene.fog = new THREE.Fog(0xffffff, 1, 5000);
 		scene.fog.color.setHSL(0.6, 0, 1);
@@ -199,7 +201,7 @@
 		// VRML parser example:
 		var fileLoader = new THREE.FileLoader();
 		// onLoad, onProgress, onError
-		fileLoader.load('wrl/house.wrl', function (data) {
+		fileLoader.load('wrl/Text.wrl', function (data) {
 			try {
 				var tree = vrmlParser.parse(data);
 			} catch ( e ) {
