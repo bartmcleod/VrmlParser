@@ -4,21 +4,54 @@ Viewpoint {
     fieldOfView    1
     jump           TRUE
     position       0 20 200
+    orientation    0 0 1 0
     description    "See text"
 }
 
-Text {
-    string ["one", "two", "three"]
-    length [] # length for each string
-	maxExtent 0 # max length, horizontally for horizontal FontStyle, vertically for vertical FontStyle
-	fontStyle FontStyle {
-	    size 10
-	    topToBottom TRUE
-	    leftToRight TRUE
-	    spacing 1.5
-	    horizontal FALSE
-	}
+#DEF theText Text {
+#    string ["one", "two", "three"]
+#    length [] # length for each string
+#	maxExtent 0 # max length, horizontally for horizontal FontStyle, vertically for vertical FontStyle
+#	fontStyle FontStyle {
+#	    size 10
+#	    topToBottom TRUE
+#	    leftToRight TRUE
+#	    spacing 1.5
+#	    horizontal FALSE
+#	}
+#}
+
+Transform {
+	# a comment about the transform node
+	children [
+		Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 1.0 1. 1.
+					specularColor 0. 0. 0.
+					emissiveColor 0.1 0.1 0.1
+					ambientIntensity 1.
+					shininess  0.
+					transparency 0.0
+				} 
+			}
+			geometry  Text {
+    			string ["one", "two", "three"]
+    			length [] # length for each string
+				maxExtent 0 # max length, horizontally for horizontal FontStyle, vertically for vertical FontStyle
+				fontStyle FontStyle {
+	    			size 10
+	    			topToBottom TRUE
+	    			leftToRight TRUE
+	    			spacing 1.5
+	    			horizontal FALSE
+				}
+			}
+		}
+	]
+	translation 0 0 0 
 }
+
 
 DirectionalLight {
     ambientIntensity  0

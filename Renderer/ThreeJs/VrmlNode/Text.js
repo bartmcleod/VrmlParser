@@ -14,6 +14,12 @@
 VrmlParser.Renderer.ThreeJs.VrmlNode[ 'Text' ] = function (node, debug) {
 	// inherit from VrmlNode
 	VrmlParser.Renderer.ThreeJs.VrmlNode.apply(this, arguments);
+
+	this.material = null;
+};
+
+VrmlParser.Renderer.ThreeJs.VrmlNode.Text.prototype.setMaterial = function (material) {
+	this.material = material;
 };
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.Text.prototype.parse = function (scene, camera) {
@@ -45,9 +51,11 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Text.prototype.parse = function (scene, cam
 
 	var spacing       = fontStyle.spacing ? fontStyle.spacing : 1;
 	var greatestWidth = 0;
+	var scope = this;
 
 	// for now, we only support a single font
 	// @todo: support more fonts
+	// fonts can also be preloaded... as an alternative to what we are doing here
 	loader.load(VrmlParser.Renderer.ThreeJs.VrmlNode.Text.fontsDir + '/helvetiker_regular.typeface.json', function (font) {
 
 		for ( var i = 0; i < node.string.length; i ++ ) {
@@ -73,7 +81,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Text.prototype.parse = function (scene, cam
 			});
 			geometry.computeBoundingBox();
 			geometry.computeFaceNormals();
-			let textMesh = new THREE.Mesh(geometry);
+			let textMesh = new THREE.Mesh(geometry, scope.material);
 			textMesh.position.set(0, y, 0);
 			textGroup.add(textMesh);
 

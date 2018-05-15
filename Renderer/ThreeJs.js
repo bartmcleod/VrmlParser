@@ -208,7 +208,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 		 * @param object node VRML node as parsed by the VrmlParser.
 		 * @returns {THREE.Object3D}
 		 */
-		var parseNode = function (node) {
+		var parseNode = function (node, material) {
 			if ( undefined === node.node ) {
 				// not a node, for now, ignore it
 				return false;
@@ -226,7 +226,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 			switch ( node.node ) {
 				case 'Text':
 					var text = new VrmlParser.Renderer.ThreeJs.VrmlNode.Text(node, scope.debug);
-					object         = text.parse();
+					text.setMaterial(material);
+					object = text.parse();
 					break;
 
 				case 'PointLight':
@@ -352,21 +353,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 				case 'Shape':
 					var isLine  = node.has('geometry') && 'IndexedLineSet' === node.geometry.node;
 					var isPoint = node.has('geometry') && 'PointSet' === node.geometry.node;
-
-					object = isLine ? new THREE.Line() : (isPoint ? new THREE.Points({ size: 0.01 }) : new THREE.Mesh());
-
-					if ( node.has('geometry') ) {
-						object.geometry = parseNode(node.geometry);
-
-						// @todo turn this off after figuring out face duplication for sharp edges
-						if ( scope.debug ) {
-							analyzer.labelVertices(object);
-							analyzer.labelFaces(object);
-						}
-					}
+					var geometry;
+					var appearance;
 
 					if ( node.has('appearance') ) {
-						var appearance = node.appearance;
+						appearance = node.appearance;
 
 						// sugar
 						appearance.has = has;
@@ -503,17 +494,38 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 						}
 
-						object.material = material;
-
 						if ( 'IndexedFaceSet' === node.geometry.node ) {
 							//if ( false === node.geometry.node.solid ) {
 
-							object.material.side = THREE.DoubleSide;
+							material.side = THREE.DoubleSide;
 							// object.material.side = THREE.FrontSide;
 
 							//}
 						}
 
+					}
+
+					if ( node.has('geometry') ) {
+						geometry = parseNode(node.geometry, material);
+
+						// turned off after figuring out edge duplication for sharp edges
+						// if ( scope.debug ) {
+						// 	analyzer.labelVertices(object);
+						// 	analyzer.labelFaces(object);
+						// }
+					}
+
+					if ( isLine ) {
+						object = new THREE.Line();
+					}
+					else if ( isPoint ) {
+						object = new THREE.Points({ size: 0.01 });
+					} else if ( geometry instanceof THREE.Group ) {
+						// for example, a text
+						scope.log('Geometry is a group, replaces the object!');
+						object = geometry;
+					} else {
+						object = new THREE.Mesh(geometry, material);
 					}
 
 					break;
@@ -736,9 +748,6 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 		scene.userData.routes = nodeTree.routes;
 		scope.log(scene);
-
-		// @todo: parse nodeTree.nodeDefinitions
-
 	}
 
 };
