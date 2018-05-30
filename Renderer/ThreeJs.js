@@ -458,23 +458,37 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 								}
 
 								if ( appearance.has('texture') ) {
+									var textureNode = appearance.texture;
+									textureNode.has = has;
 
 									// ImageTexture node?
-									if ( undefined !== appearance.texture.node
-										&& appearance.texture.node === 'ImageTexture'
-										&& undefined !== appearance.texture.url
+									if ( textureNode.has('node')
+										&& textureNode.node === 'ImageTexture'
+										&& textureNode.has('url')
+										&& textureNode.url
 									) {
 
-										var imageUrl = appearance.texture.url[ 0 ];
+										var imageUrl;
 
-										if ( undefined != imageUrl && imageUrl ) {
+										if (
+											textureNode.url instanceof Array
+											&& textureNode.url.length > 0
+										) {
+											// @todo: for simplicity we only consider the first url, but what should we do when there are more?
+											imageUrl = textureNode.url[ 0 ];
+										} else {
+											// url is (probably) a string
+											imageUrl = textureNode.url;
+										}
+
+										if ( imageUrl.length > 0 ) {
 											scope.log('Loading image: ' + imageUrl);
 
 											// @todo: support for repeatS and repeatT
 
 											var texture = new THREE.TextureLoader().load(imageUrl, function (texture) {
 												if ( undefined !== texture.image ) {
-													texture.repeat.set(texture.image.height / texture.image.width * 2, 2);
+													texture.repeat.set(texture.image.height / texture.image.width, 1);
 												}
 											});
 

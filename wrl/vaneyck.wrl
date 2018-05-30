@@ -4,7 +4,7 @@
 NavigationInfo {
     avatarSize       [ 0.1, 1.6, 0.2,]
     headlight        FALSE
-#    speed            4
+	#    speed            4
     speed            0
     type		"FLY"
     visibilityLimit  0.0
@@ -216,14 +216,8 @@ Transform {
             center		0 0 0
             children		[
 
-
-
-
-
                 Shape {
-                    appearance
-
-                    Appearance {
+                    appearance Appearance {
                         material          Material {
                             ambientIntensity  0.2
                             diffuseColor      0.8 0.8 0.8
@@ -233,7 +227,7 @@ Transform {
                             transparency      0
                         }
                         texture           ImageTexture {
-                            url     ["/wrl/images/rondleiding-256x128.jpg"]
+                            url     ["/wrl/images/rondleiding-256x256.jpg"]
                             repeatS FALSE
                             repeatT FALSE
                         }
@@ -247,9 +241,7 @@ Transform {
                     }
 
 
-                    geometry
-
-                    IndexedFaceSet {
+                    geometry IndexedFaceSet {
                         color             Color {
                             color  []
                         }
@@ -401,9 +393,9 @@ Anchor {
         # /inrichting/informatie.wrl
     ]
     description	"Meer informatie over het
-Sonsbeekpaviljoen van Aldo Van  Eyck"
-parameter	[ ]
-url		[ "http://www.spaceweb.nl/"]
+	Sonsbeekpaviljoen van Aldo Van  Eyck"
+	parameter	[ ]
+	url		[ "http://www.spaceweb.nl/"]
 }
 
 
@@ -2327,7 +2319,8 @@ Transform {#muurmn
                         13		2		-13.5,  # begin N
                         13.3		2		-13.5,
                         13.3		4		-18.2,
-                        13		4		-18.2,] #59 einde N
+                        13		4		-18.2,
+					] #59 einde N
 
                 }
                 normal            Normal {

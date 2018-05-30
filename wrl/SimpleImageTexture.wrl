@@ -19,16 +19,15 @@ Transform {
                     transparency      0
                 }
                 texture           ImageTexture {
-                    url     ["images/crate.jpg"]
+                    url     "wrl/images/crate.jpg" # "a.jpg", [],  ["a.jpg"] should all be supported
                     repeatS FALSE
                     repeatT FALSE
                 }
 
             }
 
-
             geometry Box {
-                size 1 1 1
+                size 2 2 2
             }
         }
 
