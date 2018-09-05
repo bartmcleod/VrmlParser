@@ -145,7 +145,10 @@ vrmlParser = (function() {
         peg$c23 = function(x, y, z, radians) { return {x: x, y: y, z: z, radians: radians} },
         peg$c24 = "coordIndex",
         peg$c25 = { type: "literal", value: "coordIndex", description: "\"coordIndex\"" },
-        peg$c26 = function(face) {
+        peg$c26 = function(face, lastFace) {
+            	if (null !== lastFace) {
+            		face.push(lastFace);
+                }
                 return {name: "coordIndex", value: face};
             },
         peg$c27 = "point",
@@ -1096,7 +1099,7 @@ vrmlParser = (function() {
     }
 
     function peg$parsecoordIndex() {
-      var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10;
+      var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
 
       s0 = peg$currPos;
       if (input.substr(peg$currPos, 10) === peg$c24) {
@@ -1135,26 +1138,35 @@ vrmlParser = (function() {
                   s6 = peg$FAILED;
                 }
                 if (s6 !== peg$FAILED) {
-                  s7 = peg$parsews();
+                  s7 = peg$parselastFace();
                   if (s7 === peg$FAILED) {
                     s7 = null;
                   }
                   if (s7 !== peg$FAILED) {
-                    s8 = peg$parsecomment();
+                    s8 = peg$parsews();
                     if (s8 === peg$FAILED) {
                       s8 = null;
                     }
                     if (s8 !== peg$FAILED) {
-                      s9 = peg$parseend_array();
+                      s9 = peg$parsecomment();
+                      if (s9 === peg$FAILED) {
+                        s9 = null;
+                      }
                       if (s9 !== peg$FAILED) {
-                        s10 = peg$parsews();
-                        if (s10 === peg$FAILED) {
-                          s10 = null;
-                        }
+                        s10 = peg$parseend_array();
                         if (s10 !== peg$FAILED) {
-                          peg$savedPos = s0;
-                          s1 = peg$c26(s6);
-                          s0 = s1;
+                          s11 = peg$parsews();
+                          if (s11 === peg$FAILED) {
+                            s11 = null;
+                          }
+                          if (s11 !== peg$FAILED) {
+                            peg$savedPos = s0;
+                            s1 = peg$c26(s6, s7);
+                            s0 = s1;
+                          } else {
+                            peg$currPos = s0;
+                            s0 = peg$FAILED;
+                          }
                         } else {
                           peg$currPos = s0;
                           s0 = peg$FAILED;
@@ -2687,6 +2699,59 @@ vrmlParser = (function() {
       return s0;
     }
 
+    function peg$parselastFace() {
+      var s0, s1, s2, s3, s4;
+
+      s0 = peg$currPos;
+      s1 = [];
+      s2 = peg$parseindex();
+      if (s2 !== peg$FAILED) {
+        while (s2 !== peg$FAILED) {
+          s1.push(s2);
+          s2 = peg$parseindex();
+        }
+      } else {
+        s1 = peg$FAILED;
+      }
+      if (s1 !== peg$FAILED) {
+        s2 = peg$parsews();
+        if (s2 !== peg$FAILED) {
+          if (input.charCodeAt(peg$currPos) === 44) {
+            s3 = peg$c93;
+            peg$currPos++;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c94); }
+          }
+          if (s3 === peg$FAILED) {
+            s3 = null;
+          }
+          if (s3 !== peg$FAILED) {
+            s4 = peg$parsews();
+            if (s4 !== peg$FAILED) {
+              peg$savedPos = s0;
+              s1 = peg$c110(s1);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+
+      return s0;
+    }
+
     function peg$parseindex() {
       var s0, s1, s2, s3, s4, s5;
 
@@ -2695,6 +2760,9 @@ vrmlParser = (function() {
       if (s1 !== peg$FAILED) {
         s2 = peg$currPos;
         s3 = peg$parsews();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
         if (s3 !== peg$FAILED) {
           if (input.charCodeAt(peg$currPos) === 44) {
             s4 = peg$c93;
@@ -2702,6 +2770,9 @@ vrmlParser = (function() {
           } else {
             s4 = peg$FAILED;
             if (peg$silentFails === 0) { peg$fail(peg$c94); }
+          }
+          if (s4 === peg$FAILED) {
+            s4 = null;
           }
           if (s4 !== peg$FAILED) {
             if (input.charCodeAt(peg$currPos) === 32) {
