@@ -146,8 +146,11 @@ quaternion
     { return {x: x, y: y, z: z, radians: radians} }
 
 coordIndex
-    = "coordIndex" ws? begin_array comment? ws? face:face+ ws? comment? end_array ws?
+    = "coordIndex" ws? begin_array comment? ws? face:face+ lastFace:lastFace? ws? comment? end_array ws?
     {
+    	if (null !== lastFace) {
+    		face.push(lastFace);
+        }
         return {name: "coordIndex", value: face};
     }
 
@@ -332,8 +335,12 @@ face
 	= points:index+ "-1" ws ","? ws
 	{ return points; }
 
+lastFace
+	= points:index+ ws ","? ws
+	{ return points; }
+
 index
-	= i:int (( ws "," " "?) / " "+)
+	= i:int (( ws? ","? " "?) / " "+)
     { return i }
 
 url

@@ -8,7 +8,7 @@ var fs = require('fs');
 var parser = require('./vrml.pegjs');
 var consoleRenderer = require('./Renderer/Console.js');
 // var vrmlText = fs.readFileSync('wrl/house.wrl', 'utf8');
-var vrmlText = fs.readFileSync('experiments/PCAR.wrl', 'utf8');
+var vrmlText = fs.readFileSync('wrl/ThreeFacesOnALineIndexedFaceSet.wrl', 'utf8');
 
 try {
   var nodeTree = parser.parse(vrmlText);
