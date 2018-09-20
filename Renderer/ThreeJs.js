@@ -508,7 +508,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 						}
 
-						if ( 'IndexedFaceSet' === node.geometry.node ) {
+						if ( node.has('geometry') && 'IndexedFaceSet' === node.geometry.node ) {
 							//if ( false === node.geometry.node.solid ) {
 
 							material.side = THREE.DoubleSide;
