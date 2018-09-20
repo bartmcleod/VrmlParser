@@ -59,7 +59,7 @@ function replace_wrl($file) {
 
     // @todo: this code will also include Inline wrl files that are commented out (if the files can be found), it might be hard to keep those out.
     $content = preg_replace_callback(
-        '/Inline\s*{\s*url\s+"([^"]*)"\s*}/ism',
+        '/Inline\s*{\s*url\s*\[?\s*"([^"]*)"\s*\]?\s*}/ism',
         function($matches) use ($path) {
             $filename =  $matches[1];
 //            if ($filename === 'boven/boven.wrl') {
