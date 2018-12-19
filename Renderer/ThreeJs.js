@@ -609,7 +609,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 				case 'Cone':
 					// @todo: see if you can use ConeGeometry
-					object = new THREE.CylinderGeometry(node.topRadius, node.bottomRadius, node.height);
+					object = new THREE.CylinderGeometry(0, node.bottomRadius, node.height, 36);
 					smooth.smooth(object);
 					break;
 
