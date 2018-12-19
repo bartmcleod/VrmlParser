@@ -608,14 +608,15 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					break;
 
 				case 'Cone':
-					// @todo: see if you can use ConeGeometry
-					object = new THREE.CylinderGeometry(0, node.bottomRadius, node.height, 36);
+					let openEnded = false === node.bottom;
+					let radialSegments = 36;
+					let heightSegments = 1;
+					object = new THREE.ConeGeometry(node.bottomRadius, node.height, radialSegments, heightSegments, openEnded);
 					smooth.smooth(object);
 					break;
 
 				case 'Sphere':
 					object = new THREE.SphereGeometry(node.radius);
-
 					smooth.smooth(object);
 					break;
 

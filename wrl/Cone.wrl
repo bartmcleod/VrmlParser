@@ -22,5 +22,16 @@ Transform {
 				side TRUE
 			}
 		}
+		Shape {
+			appearance	 Appearance		  {
+				material Material	   {
+					diffuseColor 0 1 0
+				}
+			}
+			# if bottom is FALSE, you should see the box through the cone when looking at its bottom
+			geometry Box {
+				size 0.1 4 0.1
+			}
+		}
 	]
 }
