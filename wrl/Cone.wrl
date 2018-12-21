@@ -19,7 +19,7 @@ Transform {
 				height 3
 				bottomRadius 0.5
 				bottom TRUE
-				side TRUE
+				side FALSE # unsupported: always has faces that form the side
 			}
 		}
 		Shape {

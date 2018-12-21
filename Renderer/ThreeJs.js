@@ -399,9 +399,9 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 								material = new THREE.ShaderMaterial({
 									vertexShader: 'void main() {' +
-									'\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n' +
-									'\n\tgl_PointSize = 3.0;\n' +
-									'}',
+										'\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n' +
+										'\n\tgl_PointSize = 3.0;\n' +
+										'}',
 									fragmentShader: 'void main() {\n\tgl_FragColor = vec4( ' + c.r + ', ' + c.g + ', ' + c.b + ', 1.0 );\n}'
 								});
 
@@ -531,8 +531,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 					if ( isLine ) {
 						object = new THREE.Line();
-					}
-					else if ( isPoint ) {
+					} else if ( isPoint ) {
 						object = new THREE.Points({ size: 0.01 });
 					} else if ( geometry instanceof THREE.Group ) {
 						// for example, a text
@@ -608,11 +607,29 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					break;
 
 				case 'Cone':
-					let openEnded = false === node.bottom;
+					// @todo move Cone to its own class
+					let openEnded = node.has('bottom') ? false === node.bottom : false;
+
 					let radialSegments = 36;
-					let heightSegments = 1;
-					object = new THREE.ConeGeometry(node.bottomRadius, node.height, radialSegments, heightSegments, openEnded);
+
+					var heightSegments = 1;
+
+					// if side is FALSE in VMRL, we will simply use no height segments
+					// does not work
+					if ( node.has('side') && false === node.side ) {
+
+						heightSegments = 0;
+
+					}
+
+					let coneRadius = node.has('bottomRadius') ? node.bottomRadius : 1;
+
+					let coneHeight = node.has('height') ? node.height : 1;
+
+					object = new THREE.ConeGeometry(coneRadius, coneHeight, radialSegments, heightSegments, openEnded);
+
 					smooth.smooth(object);
+
 					break;
 
 				case 'Sphere':
