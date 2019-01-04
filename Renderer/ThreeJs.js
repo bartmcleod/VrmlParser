@@ -224,6 +224,13 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 			var surroundingGroup = false;
 			// @todo: WIP refactor the switch to a class name with parse method for each node: parse(writer, node)
 			switch ( node.node ) {
+
+				case 'Inline':
+					object = false;
+					var inline = new VrmlParser.Renderer.ThreeJs.VrmlNode.Inline(node, scope.debug);
+					inline.parse(scene, scope);
+					break;
+
 				case 'Text':
 					var text = new VrmlParser.Renderer.ThreeJs.VrmlNode.Text(node, scope.debug);
 					text.setMaterial(material);
