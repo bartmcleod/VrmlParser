@@ -173,7 +173,7 @@ vrmlParser = (function() {
         peg$c35 = { type: "class", value: "[^0-9\\-\\+ '\"#\\,\\.\\[\\]\\{\\}\\r\\n\\t]", description: "[^0-9\\-\\+ '\"#\\,\\.\\[\\]\\{\\}\\r\\n\\t]" },
         peg$c36 = /^[^ '"#,.[\]{}\r\n\t]/,
         peg$c37 = { type: "class", value: "[^ '\"#\\,\\.\\[\\]\\{\\}\\r\\n\\t]", description: "[^ '\"#\\,\\.\\[\\]\\{\\}\\r\\n\\t]" },
-        peg$c38 = function(o, p) { return o + p.join('').trim(); },
+        peg$c38 = function(o, p) { return o + (p ? p.join('').trim():''); },
         peg$c39 = { type: "other", description: "array" },
         peg$c40 = function(v) { return v; },
         peg$c41 = function(it) {
@@ -1402,6 +1402,9 @@ vrmlParser = (function() {
           }
         } else {
           s2 = peg$FAILED;
+        }
+        if (s2 === peg$FAILED) {
+          s2 = null;
         }
         if (s2 !== peg$FAILED) {
           peg$savedPos = s0;
