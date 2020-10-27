@@ -404,13 +404,15 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 									c = convertVectorToColor(vrmlMaterial.emissiveColor);
 								}
 
-								material = new THREE.ShaderMaterial({
-									vertexShader: 'void main() {' +
-										'\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n' +
-										'\n\tgl_PointSize = 3.0;\n' +
-										'}',
-									fragmentShader: 'void main() {\n\tgl_FragColor = vec4( ' + c.r + ', ' + c.g + ', ' + c.b + ', 1.0 );\n}'
-								});
+								if (c !== undefined) {
+									material = new THREE.ShaderMaterial({
+										vertexShader: 'void main() {' +
+											'\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n' +
+											'\n\tgl_PointSize = 3.0;\n' +
+											'}',
+										fragmentShader: 'void main() {\n\tgl_FragColor = vec4( ' + c.r + ', ' + c.g + ', ' + c.b + ', 1.0 );\n}'
+									});
+								}
 
 							} else {
 
