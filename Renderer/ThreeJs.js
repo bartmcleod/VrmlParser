@@ -226,7 +226,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 			switch ( node.node ) {
 
 				case 'Inline':
-					object = false;
+					object     = false;
 					var inline = new VrmlParser.Renderer.ThreeJs.VrmlNode.Inline(node, scope.debug);
 					inline.parse(scene, scope);
 					break;
@@ -363,6 +363,16 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					var geometry;
 					var appearance;
 
+					if ( node.has('geometry') ) {
+						geometry = parseNode(node.geometry, material);
+
+						// turned off after figuring out edge duplication for sharp edges
+						// if ( scope.debug ) {
+						// 	analyzer.labelVertices(object);
+						// 	analyzer.labelFaces(object);
+						// }
+					}
+
 					if ( node.has('appearance') ) {
 						appearance = node.appearance;
 
@@ -493,16 +503,70 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 										if ( imageUrl.length > 0 ) {
 											scope.log('Loading image: ' + imageUrl);
 
-											// @todo: support for repeatS and repeatT
-
 											var texture = new THREE.TextureLoader().load(imageUrl, function (texture) {
 												if ( undefined !== texture.image ) {
-													texture.repeat.set(texture.image.height / texture.image.width, 1);
+
+													let sRepeat = texture.image.height / texture.image.width;
+													let tRepeat = 1;
+
+													/*
+													A texture is placed following the TextureCoordinate node for IndexedFaceSet and similar nodes.
+													See the specification. Coordinates clamp the texture to a certain starting point and endpoint.
+													Whether or not it is repeating will define if it extends between the 0.0 and 1.0 range.
+													s is horizontal, t is vertical. And image texture with and height dimensions are always (1*s, 1*t)
+
+													Default repetition depends on the boudingbox size.
+													Custom repetition can be defined by specifying textCoord and optionally textCoordIndex on an IndexedFaceSet.
+													@todo: implement custom repetion
+													@todo: move to its own class if possible
+													 */
+													// find boundingbox
+													geometry.computeBoundingBox();
+
+													if ( undefined !== geometry.boundingBox ) {
+
+														// for texture mapping:
+														// find two largest sizes
+														let sizes = [ geometry.boundingBox.max.x * 2, geometry.boundingBox.max.y * 2, geometry.boundingBox.max.z * 2 ];
+														sizes.sort();
+														let largest       = sizes[ 2 ];
+														let secondLargest = sizes[ 1 ];
+														let repeatS       = true; // default
+														let repeatT       = true; // default
+														var s, t;
+
+														console.log(sizes);
+
+														//
+														if ( textureNode.has('repeatS') ) {
+															if ( false === textureNode.repeatS ) {
+																repeatS = false;
+																s       = 1;
+															} else {
+																s = 4; // @todo: figure out repeat based on textCoord
+															}
+														}
+
+														if ( textureNode.has('repeatT') ) {
+															if ( false === textureNode.repeatT ) {
+																repeatT = false;
+																t       = secondLargest / largest;
+															} else {
+																t = 3; // @todo: figure out repeat based on textCoord
+															}
+														}
+													}
+
+													console.log('Repeats:');
+													console.log(s);
+													console.log(t);
+
+													texture.repeat.set(s, t);
 												}
 											});
 
-											texture.wrapS = THREE.ClampToEdgeWrapping;
-											texture.wrapT = THREE.ClampToEdgeWrapping;
+											texture.wrapS = THREE.RepeatWrapping;
+											texture.wrapT = THREE.RepeatWrapping;
 											scope.log(texture);
 
 											material.map = texture;
@@ -526,16 +590,6 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 							//}
 						}
 
-					}
-
-					if ( node.has('geometry') ) {
-						geometry = parseNode(node.geometry, material);
-
-						// turned off after figuring out edge duplication for sharp edges
-						// if ( scope.debug ) {
-						// 	analyzer.labelVertices(object);
-						// 	analyzer.labelFaces(object);
-						// }
 					}
 
 					if ( isLine ) {
