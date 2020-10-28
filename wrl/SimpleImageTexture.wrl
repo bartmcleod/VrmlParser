@@ -2,6 +2,7 @@
 NavigationInfo {
 
 }
+
 Transform {
     center		0 0 0
     children		[
@@ -10,7 +11,7 @@ Transform {
             appearance
 
             Appearance {
-                material          Material {
+                    material     DEF Wood Material {
                     ambientIntensity  0.2
                     diffuseColor      0.8 0.8 0.8
                     emissiveColor     0 0 0
@@ -27,10 +28,65 @@ Transform {
             }
 
             geometry Box {
-                size 2 2 2
+                size 1 1 1
             }
         }
 
     ]
+
+}
+
+Transform {
+    center		0 0 0
+    children		[
+
+        Shape {
+            appearance
+
+            Appearance {
+                material          USE Wood
+                texture           ImageTexture {
+                    url     "wrl/images/crate.jpg" # "a.jpg", [],  ["a.jpg"] should all be supported
+                    repeatS TRUE
+                    repeatT TRUE
+                }
+
+            }
+
+            geometry Box {
+                size 2 1 1
+            }
+        }
+
+    ]
+
+    translation 2 0 0
+
+}
+Transform {
+    center		0 0 0
+    children		[
+
+        Shape {
+            appearance
+
+            Appearance {
+                material          USE Wood
+                texture           ImageTexture {
+                    url     "wrl/images/texture-map.jpg" # "a.jpg", [],  ["a.jpg"] should all be supported
+                    repeatS FALSE
+                    repeatT FALSE
+                }
+
+            }
+
+            geometry Box {
+                size 2 1 1
+            }
+        }
+
+    ]
+
+    translation 5 0 0
 
 }
