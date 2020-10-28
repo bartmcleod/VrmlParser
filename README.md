@@ -47,11 +47,7 @@ xhrLoader.load("wrl/house.wrl", function (data){
 Instead of using the THREE.XHRLoader you could use XMLHttpRequest. For the browser, you do not need a console renderer to get visual textual output, you may just call `console.log(tree);` and you will be able to expand all nodes in the browser console, to verify that your VRML file has been parsed as expected.
 
 ### Inline nodes
-The parser currently makes no attempt to load Inline nodes. It only parses them as an Inline node with
-a single property: the url. Depending on the type of renderer you use, you might want to feed the VRML file
-found at the url to the parser in turn, to get its contents as a node tree. If you are not writing a renderer,
-but would still like to see the contents of your whole VRML world, including Inline nodes, you may
-use `php make_single_file.php input.wrl [output-dir]`. For this command you need php. It will output 
+The parser supports Inline nodes since v0.8.0. If you prefer to have a single wrl file, without Inline nodes, you may still use `php make_single_file.php input.wrl [output-dir]`. For this command you need php. It will output 
 the file `single_input.wrl` in the same directory as `input.wrl` or in the `output-dir` if you specified
 one. Once you've got `single_input.wrl` you may use that as input in the `vrml-parser.js` and run that through
 `node vrml-parser.js` to see the full tree on the console.
