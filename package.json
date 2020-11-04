@@ -1,6 +1,6 @@
 {
   "name": "vrmlparser",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "A package that aims to help you to re-use your VRML models as 3D scenes in the browser, with the use of modern JavaScript libraries such as three.js",
   "author": "Bart McLeod <mcleod@spaceweb.nl>",
   "repository": {
