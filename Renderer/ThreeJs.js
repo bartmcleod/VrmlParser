@@ -507,8 +507,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 											var texture = new THREE.TextureLoader().load(imageUrl, function (texture) {
 												if ( undefined !== texture.image ) {
 
-													let sRepeat = texture.image.height / texture.image.width;
-													let tRepeat = 1;
+													let imageProportion = texture.image.height / texture.image.width;
 
 													/*
 													A texture is placed following the TextureCoordinate node for IndexedFaceSet and similar nodes.
@@ -544,16 +543,18 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 																repeatS = false;
 																s       = 1;
 															} else {
-																s = 4; // @todo: figure out repeat based on textCoord
+																texture.wrapT = THREE.RepeatWrapping;
+																s = 8; // @todo: figure out repeat based on textCoord
 															}
 														}
 
 														if ( textureNode.has('repeatT') ) {
 															if ( false === textureNode.repeatT ) {
 																repeatT = false;
-																t       = secondLargest / largest;
+																t       = largest / secondLargest * imageProportion;
 															} else {
-																t = 3; // @todo: figure out repeat based on textCoord
+																texture.wrapS = THREE.RepeatWrapping;
+																t = 8 / largest / secondLargest * imageProportion; // @todo: figure out repeat based on textCoord
 															}
 														}
 													}
@@ -561,13 +562,13 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 													console.log('Repeats:');
 													console.log(s);
 													console.log(t);
+													console.log(imageProportion);
 
+													// texture.repeat.set(1,1);
 													texture.repeat.set(s, t);
 												}
 											});
 
-											texture.wrapS = THREE.RepeatWrapping;
-											texture.wrapT = THREE.RepeatWrapping;
 											scope.log(texture);
 
 											material.map = texture;

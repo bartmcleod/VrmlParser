@@ -227,7 +227,7 @@ Transform {
                             transparency      0
                         }
                         texture           ImageTexture {
-                            url     ["/wrl/images/rondleiding-256x256.jpg"]
+                            url     ["/wrl/images/rondleiding.jpg"]
                             repeatS FALSE
                             repeatT FALSE
                         }
