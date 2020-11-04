@@ -57,30 +57,28 @@
     <h4>Viewpoints from the VRML file</h4>
 </div>
 
-<script src="node_modules/three/build/three.js"></script>
-<!--<script src="node_modules/three/build/three.min.js"></script>-->
+<!--<script src="node_modules/three/build/three.js"></script>-->
+<script src="node_modules/three/build/three.min.js"></script>
 <!-- use scripts below for development and debugging -->
-<script src="vrml.js"></script>
-<script src="Renderer/ThreeJs.js"></script>
-<script src="Renderer/ThreeJs/Animation.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode.js"></script>
-<script src="Renderer/ThreeJs/Analyzer.js"></script>
-<script src="Renderer/ThreeJs/SmoothEdges.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/Interpolator.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/OrientationInterpolator.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/PositionInterpolator.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/DirectionalLight.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/PointLight.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/Text.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/Inline.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/Viewpoint.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/NavigationInfo.js"></script>
-<script src="Renderer/ThreeJs/VrmlNode/IndexedFaceSet.js"></script>
-<script src="node_modules/tween.js/src/Tween.js"></script>
+<!--<script src="vrml.js"></script>-->
+<!--<script src="Renderer/ThreeJs.js"></script>-->
+<!--<script src="Renderer/ThreeJs/Animation.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode.js"></script>-->
+<!--<script src="Renderer/ThreeJs/Analyzer.js"></script>-->
+<!--<script src="Renderer/ThreeJs/SmoothEdges.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/Interpolator.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/OrientationInterpolator.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/PositionInterpolator.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/DirectionalLight.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/PointLight.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/Text.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/Inline.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/Viewpoint.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/NavigationInfo.js"></script>-->
+<!--<script src="Renderer/ThreeJs/VrmlNode/IndexedFaceSet.js"></script>-->
+<!--<script src="node_modules/tween.js/src/Tween.js"></script>-->
 <!-- use the minified version for integration with Three.js and for speed -->
-<!--
 <script src="vrml.min.js"></script>
--->
 <script src="node_modules/three/examples/js/renderers/Projector.js"></script>
 <script src="node_modules/three/examples/js/controls/OrbitControls.js"></script>
 <script src="node_modules/three/examples/js/controls/FlyControls.js"></script>
@@ -106,8 +104,8 @@
 	init();
 	animate();
 
-	function resetControls() {
-		controls             = new THREE.OrbitControls(camera);
+	function resetControls(renderer) {
+		controls             = new THREE.OrbitControls(camera, renderer.domElement);
 		controls.rotateSpeed = 1;
 		controls.zoomSpeed   = 0.2;
 		controls.panSpeed    = 0.2;
@@ -158,21 +156,22 @@
 
 		scene = new THREE.Scene();
 
-		// var light = new THREE.AmbientLight(new THREE.Color(1,1,1), 0.1);
+		// var light = new THREE.PointLight(new THREE.Color(1,1,1), 1);
+		// light.position.set(2,2,2);
 		// scene.add(light);
 
-		scene.fog = new THREE.Fog(0xffffff, 1, 5000);
+			scene.fog = new THREE.Fog(0xffffff, 1, 5000);
 		scene.fog.color.setHSL(0.6, 0, 1);
 
 		scene.add(camera);
 
-		resetControls();
-
 		var vrmlConverter = new VrmlParser.Renderer.ThreeJs(debug);
-		// renderer
 
 		renderer                   = new THREE.WebGLRenderer({ antialias: true });
-		renderer.shadowMap.enabled = true;
+
+        // renderer
+        resetControls(renderer);
+        renderer.shadowMap.enabled = true;
 		renderer.setClearColor(0x000000, 1);
 		renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -220,7 +219,7 @@
 				console.log(tree);
 			}
 
-			vrmlConverter.render(tree, scene);
+			vrmlConverter.render(tree, scene, renderer);
 			// once the scene is rendered in threejs, a registry of mesh objects that responed to sensors can be build
             animation.buildSensorRegistry(scene);
 
@@ -256,7 +255,6 @@
 		//
 
 		window.addEventListener('resize', onWindowResize, false);
-
 	}
 
 	function onWindowResize() {

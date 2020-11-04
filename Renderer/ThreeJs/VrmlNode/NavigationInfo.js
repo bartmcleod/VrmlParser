@@ -20,24 +20,26 @@ VrmlParser.Renderer.ThreeJs.VrmlNode[ 'NavigationInfo' ] = function (originalNod
  * @todo: Figure out if visibilityLimit can be implemented, could this be the 'far' property of the camera?
  * @todo: Create controls that mimic the original design of VRML better.
  * @param scene
+ * @param debug
+ * @param domElement (renderer.domElement needed for controls)
  */
-VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo.prototype.parse = function (scene) {
+VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo.prototype.parse = function (scene, debug, renderer) {
 	this.log('From NavigationInfo');
 	var speed = undefined !== this.node.speed ? this.node.speed : 1;
 
 	if ( undefined !== this.node.type ) {
 		switch ( this.node.type.toLowerCase() ) {
-			case 'fly': // fly
+			case 'fly':
 				this.log('fly!');
-				// use global controls and camera, no better solution at hand
-				controls               = new THREE.FlyControls(camera);
+				// use global controls, renderer and camera, no better solution at hand
+				controls               = new THREE.FlyControls(camera, renderer.domElement);
 				controls.movementSpeed = speed;
 				break;
 		}
 	} else {
 		this.log('orbit!');
-		// use global controls and camera, no better solution at hand
-		controls               = new THREE.OrbitControls(camera);
+		// use global controls, renderer and camera, no better solution at hand
+		controls               = new THREE.OrbitControls(camera, renderer.domElement);
 		controls.movementSpeed = speed;
 	}
 

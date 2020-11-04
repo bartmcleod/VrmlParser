@@ -34,10 +34,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 	},
 
 	/**
-	 * @param Object nodeTree
-	 * @param THREE.Scene scene
+	 * @param nodeTree Object
+	 * @param scene THREE.Scene
+	 * @param renderer THREE.Renderer
 	 */
-	render: function (nodeTree, scene) {
+	render: function (nodeTree, scene, renderer) {
 
 		var scope = this;
 
@@ -94,11 +95,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 		 * You must specify one more color than you have angles at the beginning of the colors array.
 		 * This is the color of the Zenith (the top of the shape).
 		 *
-		 * @param geometry
-		 * @param radius
-		 * @param angles
-		 * @param colors
-		 * @param boolean directionIsDown Whether to work bottom up or top down.
+		 * @param geometry THREE.Geometry
+		 * @param radius float
+		 * @param angles array
+		 * @param colors array
+		 * @param directionIsDown bool Whether to work bottom up or top down.
 		 */
 		var paintFaces = function (geometry, radius, angles, colors, directionIsDown) {
 			var f, n, p, vertexIndex, color;
@@ -252,7 +253,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					// no object needed, NavigationInfo initializes controls in the scene
 					object             = false;
 					var navigationInfo = new VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo(node, scope.debug);
-					navigationInfo.parse(scene, camera);
+					navigationInfo.parse(scene, camera, renderer);
 					break;
 
 				case 'Viewpoint':
