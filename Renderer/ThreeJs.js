@@ -5,7 +5,33 @@
  * @copyright Bart McLeod 2016, mcleod@spaceweb.nl
  * @author Bart McLeod / http://spaceweb.nl/
  */
-window[ 'VrmlParser' ] = {};
+import {Object3D} from "../node_modules/three/src/core/Object3D.js";
+import {Group} from "../node_modules/three/src/objects/Group.js";
+import {Geometry} from "../node_modules/three/src/core/Geometry.js";
+import {SphereGeometry} from "../node_modules/three/src/geometries/SphereGeometry.js";
+import {BoxGeometry} from "../node_modules/three/src/geometries/BoxGeometry.js";
+import {CylinderGeometry} from "../node_modules/three/src/geometries/CylinderGeometry.js";
+import {Line} from "../node_modules/three/src/objects/Line.js";
+import {Points} from "../node_modules/three/src/objects/Points.js";
+import {Mesh} from "../node_modules/three/src/objects/Mesh.js";
+import {MeshBasicMaterial} from "../node_modules/three/src/materials/MeshBasicMaterial.js";
+import {MeshLambertMaterial} from "../node_modules/three/src/materials/MeshLambertMaterial.js";
+import {MeshPhongMaterial} from "../node_modules/three/src/materials/MeshPhongMaterial.js";
+import {ShaderMaterial} from "../node_modules/three/src/materials/ShaderMaterial.js";
+import {BackSide, DoubleSide} from "../node_modules/three/src/constants.js";
+import {CubeGeometry, VertexColors} from "../node_modules/three/src/Three.Legacy.js";
+import {Vector3} from "../node_modules/three/src/math/Vector3.js";
+import {Face3} from "../node_modules/three/src/core/Face3.js";
+import {ConeGeometry} from "../node_modules/three/src/geometries/ConeGeometry.js";
+import {MeshNormalMaterial} from "../node_modules/three/src/materials/MeshNormalMaterial.js";
+import {Color} from "../node_modules/three/src/math/Color.js";
+
+let VrmlParser = {}
+
+export default VrmlParser;
+
+// @todo: it should probably import all the nodes instead of having the page load them...?
+// yes it should, now all modules extend the VrmlParser instead of exporting just themselves
 
 VrmlParser[ 'Renderer' ] = {};
 
@@ -35,10 +61,10 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 	/**
 	 * @param nodeTree Object
-	 * @param scene THREE.Scene
-	 * @param renderer THREE.Renderer
+	 * @param scene Scene
+	 * @param renderer Renderer
 	 */
-	render: function (nodeTree, scene, renderer) {
+	render: function (nodeTree, scene, renderer, camera, controls) {
 
 		var scope = this;
 
@@ -63,13 +89,13 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 		 * @returns {Color}
 		 */
 		var interpolateColors = function (a, b, t) {
-			a          = convertVectorToColor(a);
-			b          = convertVectorToColor(b);
+			a = convertVectorToColor(a);
+			b = convertVectorToColor(b);
 			var deltaR = a.r - b.r;
 			var deltaG = a.g - b.g;
 			var deltaB = a.b - b.b;
 
-			var c = new THREE.Color();
+			var c = new Color();
 
 			c.r = a.r - t * deltaR;
 			c.g = a.g - t * deltaG;
@@ -95,7 +121,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 		 * You must specify one more color than you have angles at the beginning of the colors array.
 		 * This is the color of the Zenith (the top of the shape).
 		 *
-		 * @param geometry THREE.Geometry
+		 * @param geometry Geometry
 		 * @param radius float
 		 * @param angles array
 		 * @param colors array
@@ -106,7 +132,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 			var direction = directionIsDown ? 1 : - 1;
 
-			var faceIndices = [ 'a', 'b', 'c', 'd' ];
+			var faceIndices = ['a', 'b', 'c', 'd'];
 
 			var coord = [], aColor, bColor, t = 1, A = {}, B = {}, applyColor = false, colorIndex;
 
@@ -128,7 +154,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 				f = geometry.faces[ i ];
 
-				n = (f instanceof THREE.Face3) ? 3 : 4;
+				n = (f instanceof Face3) ? 3 : 4;
 
 				for ( var j = 0; j < n; j ++ ) {
 
@@ -178,7 +204,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 						} else if ( undefined === f.vertexColors[ j ] ) {
 
-							colorIndex          = directionIsDown ? colors.length - 1 : 0;
+							colorIndex = directionIsDown ? colors.length - 1 : 0;
 							f.vertexColors[ j ] = convertVectorToColor(colors[ colorIndex ]);
 
 						}
@@ -195,10 +221,10 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 		 * Utility to quickly and safely check if a given property is
 		 * present and set on a node.
 		 *
-		 * @param string property
+		 * @param property string
 		 * @return boolean
 		 */
-		var has = function (property) {
+		let has = function (property) {
 			// note that this pull the object the 'has' method is assigned to into this functions scope
 			return ('undefined' !== typeof this[ property ] && null !== this[ property ]);
 		};
@@ -206,10 +232,12 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 		/**
 		 * Convert VRML node representation into a ThreeJS 3D object.
 		 *
-		 * @param object node VRML node as parsed by the VrmlParser.
-		 * @returns {THREE.Object3D}
+		 * @param node object VRML node as parsed by the VrmlParser.
+		 * @param material
+		 *
+		 * @returns {Object3D}
 		 */
-		var parseNode = function (node, material) {
+		let parseNode = function (node, material) {
 			if ( undefined === node.node ) {
 				// not a node, for now, ignore it
 				return false;
@@ -221,13 +249,13 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 			node.has = has;
 
 			// this will be the returned ThreeJS object returned from parseNode, if not overwritten
-			var object           = new THREE.Object3D();
-			var surroundingGroup = false;
+			let object = new Object3D();
+			let surroundingGroup = false;
 			// @todo: WIP refactor the switch to a class name with parse method for each node: parse(writer, node)
 			switch ( node.node ) {
 
 				case 'Inline':
-					object     = false;
+					object = false;
 					var inline = new VrmlParser.Renderer.ThreeJs.VrmlNode.Inline(node, scope.debug);
 					inline.parse(scene, scope);
 					break;
@@ -240,24 +268,24 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 				case 'PointLight':
 					var pointLight = new VrmlParser.Renderer.ThreeJs.VrmlNode.PointLight(node, scope.debug);
-					object         = pointLight.parse();
+					object = pointLight.parse();
 					break;
 
 				case 'DirectionalLight':
-					object               = false;
+					object = false;
 					var directionalLight = new VrmlParser.Renderer.ThreeJs.VrmlNode.DirectionalLight(node, scope.debug);
 					directionalLight.parse(scene, camera);
 					break;
 
 				case 'NavigationInfo':
 					// no object needed, NavigationInfo initializes controls in the scene
-					object             = false;
+					object = false;
 					var navigationInfo = new VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo(node, scope.debug);
-					navigationInfo.parse(scene, camera, renderer);
+					navigationInfo.parse(scene, scope.debug, renderer, camera, controls);
 					break;
 
 				case 'Viewpoint':
-					object            = false;
+					object = false;
 					var viewPointName = node.name ? node.name : node.description;
 					scope.log('Got a Viewpoint named ' + (viewPointName));
 					var viewpoint = new VrmlParser.Renderer.ThreeJs.VrmlNode.Viewpoint(node, scope.debug);
@@ -284,7 +312,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 				case 'Group':
 				case 'Transform':
 					// Group is basically the same as Object3D, only the type is set to Group
-					object = new THREE.Group;
+					object = new Group;
 					if ( node.has('children') ) {
 						// sugar
 						node.children.has = has;
@@ -299,11 +327,14 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 							// children should be an array
 							for ( var i = 0; i < node.children.length; i ++ ) {
 
-								var child      = node.children[ i ];
-								child.has      = has;
-								var threeJsObj = parseNode(child);
-								if ( false !== threeJsObj ) {
-									object.add(threeJsObj);
+								var child = node.children[ i ];
+
+								if ( typeof child !== 'string' ) {
+									child.has = has;
+									var threeJsObj = parseNode(child);
+									if ( false !== threeJsObj ) {
+										object.add(threeJsObj);
+									}
 								}
 
 							}
@@ -325,7 +356,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 						r = node.rotation;
 						// we no longer set it here, but in the surrounding group, otherwise rotation will no be relative when animated
-						//object.quaternion.setFromAxisAngle(new THREE.Vector3(r.x, r.y, r.z), r.radians);
+						//object.quaternion.setFromAxisAngle(new Vector3(r.x, r.y, r.z), r.radians);
 					}
 
 					if ( node.has('scale') ) {
@@ -338,9 +369,9 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 					// support for center requires an extra group, which we will add allways, to ensure predictable behavior
 					// the name of the surrounding group will later become the name of the object prefixed with 'surrounding_'
-					surroundingGroup = new THREE.Group();
+					surroundingGroup = new Group();
 
-					if ( ! node.has('center') ) {
+					if ( !node.has('center') ) {
 						// setup a default center
 						node.center = { x: 0, y: 0, z: 0 };
 					}
@@ -353,13 +384,13 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					object.position.set(0 - center.x, 0 - center.y, 0 - center.z);
 
 					// we me must also rotate the surrounding group to any rotation that applies to the original object
-					surroundingGroup.quaternion.setFromAxisAngle(new THREE.Vector3(r.x, r.y, r.z).normalize(), r.radians);
+					surroundingGroup.quaternion.setFromAxisAngle(new Vector3(r.x, r.y, r.z).normalize(), r.radians);
 
 					surroundingGroup.add(object);
 					break;
 
 				case 'Shape':
-					var isLine  = node.has('geometry') && 'IndexedLineSet' === node.geometry.node;
+					var isLine = node.has('geometry') && 'IndexedLineSet' === node.geometry.node;
 					var isPoint = node.has('geometry') && 'PointSet' === node.geometry.node;
 					var geometry;
 					var appearance;
@@ -390,7 +421,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 							if ( isLine ) {
 								//scope.log('Line object');
 								// @todo: we use LineBasicMaterial, is this always appropriate for VRML?
-								material = new THREE.LineBasicMaterial();
+								material = new LineBasicMaterial();
 
 								if ( vrmlMaterial.has('color') ) {
 
@@ -415,8 +446,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 									c = convertVectorToColor(vrmlMaterial.emissiveColor);
 								}
 
-								if (c !== undefined) {
-									material = new THREE.ShaderMaterial({
+								if ( c !== undefined ) {
+									material = new ShaderMaterial({
 										vertexShader: 'void main() {' +
 											'\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n' +
 											'\n\tgl_PointSize = 3.0;\n' +
@@ -435,11 +466,11 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 										|| vrmlMaterial.specularColor.z != 0
 									) ) {
 
-									material = new THREE.MeshPhongMaterial();
+									material = new MeshPhongMaterial();
 
 								} else {
 
-									material = new THREE.MeshLambertMaterial();
+									material = new MeshLambertMaterial();
 
 								}
 
@@ -504,7 +535,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 										if ( imageUrl.length > 0 ) {
 											scope.log('Loading image: ' + imageUrl);
 
-											var texture = new THREE.TextureLoader().load(imageUrl, function (texture) {
+											var texture = new TextureLoader().load(imageUrl, function (texture) {
 												if ( undefined !== texture.image ) {
 
 													let imageProportion = texture.image.height / texture.image.width;
@@ -517,7 +548,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 													Default repetition depends on the boudingbox size.
 													Custom repetition can be defined by specifying textCoord and optionally textCoordIndex on an IndexedFaceSet.
-													@todo: implement custom repetion
+													@todo: implement custom repetion based on scale (!)
 													@todo: move to its own class if possible
 													 */
 													// find boundingbox
@@ -527,12 +558,10 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 														// for texture mapping:
 														// find two largest sizes
-														let sizes = [ geometry.boundingBox.max.x * 2, geometry.boundingBox.max.y * 2, geometry.boundingBox.max.z * 2 ];
+														let sizes = [geometry.boundingBox.max.x * 2, geometry.boundingBox.max.y * 2, geometry.boundingBox.max.z * 2];
 														sizes.sort();
-														let largest       = sizes[ 2 ];
+														let largest = sizes[ 2 ];
 														let secondLargest = sizes[ 1 ];
-														let repeatS       = true; // default
-														let repeatT       = true; // default
 														var s, t;
 
 														console.log(sizes);
@@ -540,31 +569,30 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 														//
 														if ( textureNode.has('repeatS') ) {
 															if ( false === textureNode.repeatS ) {
-																repeatS = false;
-																s       = 1;
+																s = 1;
 															} else {
-																texture.wrapT = THREE.RepeatWrapping;
-																s = 8; // @todo: figure out repeat based on textCoord
+																texture.wrapT = RepeatWrapping;
+																s = 8; // @todo: repeat based on scale
 															}
 														}
 
 														if ( textureNode.has('repeatT') ) {
 															if ( false === textureNode.repeatT ) {
-																repeatT = false;
-																t       = largest / secondLargest * imageProportion;
+																t = largest / secondLargest * imageProportion;
 															} else {
-																texture.wrapS = THREE.RepeatWrapping;
-																t = 8 / largest / secondLargest * imageProportion; // @todo: figure out repeat based on textCoord
+																texture.wrapS = RepeatWrapping;
+																t = 8 / largest / secondLargest * imageProportion; // @todo: repeat based on scale
 															}
 														}
 													}
 
-													console.log('Repeats:');
-													console.log(s);
-													console.log(t);
-													console.log(imageProportion);
+													if ( this.debug ) {
+														console.log('Repeats:');
+														console.log(s);
+														console.log(t);
+														console.log(imageProportion);
+													}
 
-													// texture.repeat.set(1,1);
 													texture.repeat.set(s, t);
 												}
 											});
@@ -586,8 +614,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 						if ( node.has('geometry') && 'IndexedFaceSet' === node.geometry.node ) {
 							//if ( false === node.geometry.node.solid ) {
 
-							material.side = THREE.DoubleSide;
-							// object.material.side = THREE.FrontSide;
+							material.side = DoubleSide;
+							// object.material.side = FrontSide;
 
 							//}
 						}
@@ -595,15 +623,15 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					}
 
 					if ( isLine ) {
-						object = new THREE.Line();
+						object = new Line();
 					} else if ( isPoint ) {
-						object = new THREE.Points({ size: 0.01 });
-					} else if ( geometry instanceof THREE.Group ) {
+						object = new Points({ size: 0.01 });
+					} else if ( geometry instanceof Group ) {
 						// for example, a text
 						scope.log('Geometry is a group, replaces the object!');
 						object = geometry;
 					} else {
-						object = new THREE.Mesh(geometry, material);
+						object = new Mesh(geometry, material);
 					}
 
 					break;
@@ -617,14 +645,14 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 					var radius = 2e4;
 
-					var skyGeometry = new THREE.SphereGeometry(radius, segments, segments);
-					var skyMaterial = new THREE.MeshBasicMaterial({ fog: false, side: THREE.BackSide });
+					var skyGeometry = new SphereGeometry(radius, segments, segments);
+					var skyMaterial = new MeshBasicMaterial({ fog: false, side: BackSide });
 
 					if ( node.skyColor.length > 1 ) {
 
 						paintFaces(skyGeometry, radius, node.skyAngle, node.skyColor, true);
 
-						skyMaterial.vertexColors = THREE.VertexColors;
+						skyMaterial.vertexColors = VertexColors;
 
 					} else {
 
@@ -634,7 +662,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 					}
 
-					var sky                       = new THREE.Mesh(skyGeometry, skyMaterial);
+					var sky = new Mesh(skyGeometry, skyMaterial);
 					sky.userData.originalVrmlNode = node;
 					scene.add(sky);
 
@@ -644,30 +672,30 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 						radius = 1.2e4;
 
-						var groundGeometry = new THREE.SphereGeometry(radius, segments, segments, 0, 2 * Math.PI, 0.5 * Math.PI, 1.5 * Math.PI);
-						var groundMaterial = new THREE.MeshBasicMaterial({
+						var groundGeometry = new SphereGeometry(radius, segments, segments, 0, 2 * Math.PI, 0.5 * Math.PI, 1.5 * Math.PI);
+						var groundMaterial = new MeshBasicMaterial({
 							fog: false,
-							side: THREE.BackSide,
-							vertexColors: THREE.VertexColors
+							side: BackSide,
+							vertexColors: VertexColors
 						});
 
 						paintFaces(groundGeometry, radius, node.groundAngle, node.groundColor, false);
 
-						var ground                       = new THREE.Mesh(groundGeometry, groundMaterial);
+						var ground = new Mesh(groundGeometry, groundMaterial);
 						ground.userData.originalVrmlNode = node;
-						ground.receiveShadow             = true;
+						ground.receiveShadow = true;
 						scene.add(ground);
 					}
 
 					break;
 
 				case 'Box':
-					var s  = node.size;
-					object = new THREE.BoxGeometry(s.x, s.y, s.z);
+					var s = node.size;
+					object = new BoxGeometry(s.x, s.y, s.z);
 					break;
 
 				case 'Cylinder':
-					object = new THREE.CylinderGeometry(node.radius, node.radius, node.height, 36);
+					object = new CylinderGeometry(node.radius, node.radius, node.height, 36);
 					smooth.smooth(object);
 					break;
 
@@ -691,40 +719,40 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 					let coneHeight = node.has('height') ? node.height : 1;
 
-					object = new THREE.ConeGeometry(coneRadius, coneHeight, radialSegments, heightSegments, openEnded);
+					object = new ConeGeometry(coneRadius, coneHeight, radialSegments, heightSegments, openEnded);
 
 					smooth.smooth(object);
 
 					break;
 
 				case 'Sphere':
-					object = new THREE.SphereGeometry(node.radius);
+					object = new SphereGeometry(node.radius);
 					smooth.smooth(object);
 					break;
 
 				case 'IndexedFaceSet':
 					var indexedFaceSet = new VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet(node, scope.debug);
-					object             = indexedFaceSet.parse();
+					object = indexedFaceSet.parse();
 					// indexed faces set uses SmoothEdges internally, no need to do anything here
 					break;
 
 				case 'IndexedLineSet':
-					var vec;
-					var point;
-					var object   = new THREE.Geometry();
-					var vertices = [];
+					var vec, point;
+
+					object = new Geometry();
+					let vertices = [];
 
 					// first create a buffer of vectors to use for the points.
 					// the challenge lies in the fact that ThreeJs draws lines in the order the vertices are added
 					// I do not yet see a way to tell ThreeJs to draw any amount of lines between all points.
 					// Could it be just a simple as using a LineMaterial for a shape?
 					if ( node.has('coord') ) {
-
-						for ( var k = 0, l = node.coord.point.length; k < l; k ++ ) {
+						let k, l;
+						for ( k = 0, l = node.coord.point.length; k < l; k ++ ) {
 
 							point = node.coord.point[ k ];
 
-							vec = new THREE.Vector3(point.x, point.y, point.z);
+							vec = new Vector3(point.x, point.y, point.z);
 
 							vertices.push(vec);
 
@@ -736,7 +764,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 						for ( var i = 0, j = node.coordIndex.length; i < j; i ++ ) {
 
-							indexes = node.coordIndex[ i ];
+							let indexes = node.coordIndex[ i ];
 
 							// loop over all the points and add their vertex to the geometry.
 							// hopefully, using the same vertex twice will not lead to an error,
@@ -747,7 +775,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 								var pointA = vertices[ a ];
 
-								object.vertices.push(new THREE.Vector3(pointA.x, pointA.y, pointA.z));
+								object.vertices.push(new Vector3(pointA.x, pointA.y, pointA.z));
 							}
 
 						}
@@ -759,9 +787,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					break;
 				case 'PointSet':
 
-					var vec;
-					var point;
-					var object = new THREE.Geometry();
+					object = new Geometry();
 
 					if ( node.has('coord') ) {
 
@@ -769,7 +795,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 
 							point = node.coord.point[ k ];
 
-							vec = new THREE.Vector3(point.x, point.y, point.z);
+							vec = new Vector3(point.x, point.y, point.z);
 
 							object.vertices.push(vec);
 
@@ -784,7 +810,7 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 					//
 					//     point = node.coord.point[k];
 					//
-					//     vec = new THREE.Vector3(point.x, point.y, point.z);
+					//     vec = new Vector3(point.x, point.y, point.z);
 					//
 					//     geometry.vertices.push(vec);
 					//
@@ -798,12 +824,12 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 				case 'TouchSensor':
 					// just explicitly keep the object (by not setting it to false), do nothing else
 					if ( scope.debug ) {
-						// in debug mode, add a ten x ten x ten cm cube to indicate the presence of a touchsensor
+						// in debug mode, add a 10 x 10 x 10 cm cube to indicate the presence of a touchsensor
 						// @todo: register this with a legenda
-						object                = new THREE.Mesh();
-						object.geometry       = new THREE.CubeGeometry(0.1, 0.1, 0.1);
-						object.material       = new THREE.MeshNormalMaterial();
-						object.material.color = new THREE.Color(0.5, 0.5, 0.5);
+						object = new Mesh();
+						object.geometry = new CubeGeometry(0.1, 0.1, 0.1);
+						object.material = new MeshNormalMaterial();
+						object.material.color = new Color(0.5, 0.5, 0.5);
 					}
 					break;
 				default:
@@ -825,8 +851,8 @@ VrmlParser.Renderer.ThreeJs.prototype = {
 						object.name = node.node;
 					}
 				}
-				object.castShadow    = ! isPoint;
-				object.receiveShadow = ! isPoint;
+				object.castShadow = !isPoint;
+				object.receiveShadow = !isPoint;
 			}
 
 			if ( false !== surroundingGroup ) {

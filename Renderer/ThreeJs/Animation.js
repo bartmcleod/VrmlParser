@@ -1,3 +1,8 @@
+import VrmlParser from "../ThreeJs.js";
+import {Projector} from "../../node_modules/three/examples/jsm/renderers/Projector.js";
+import {Raycaster} from "../../node_modules/three/src/core/Raycaster.js";
+import {Vector3} from "../../node_modules/three/src/math/Vector3.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since May 25, 2016
@@ -19,8 +24,7 @@
  * @constructor
  */
 VrmlParser.Renderer.ThreeJs[ 'Animation' ] = function (debug) {
-	// use global camera, scene and renderer ( a weakness, I think )
-	this.debug      = debug ? true : false;
+	this.debug      = debug;
 	this.animations = {};
 };
 
@@ -43,6 +47,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 	 *
 	 */
 	buildSensorRegistry: function (scene) {
+		this.scene = scene;
 		var scope = this;
 		this.log('building sensor registry');
 		var sensors = [];
@@ -146,9 +151,9 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 		}
 
 		// loop over all supported sensortypes to build the registry, based on the sensors found in the scene
-		var supportedSensorTypes = [ 'TouchSensor' ];
+		let supportedSensorTypes = ['TouchSensor'];
 
-		for ( var k = 0; k < supportedSensorTypes.length; k ++ ) {
+		for ( let k = 0; k < supportedSensorTypes.length; k ++ ) {
 			var sensorType = supportedSensorTypes[ k ];
 
 			if ( this.sensorRegistry[ sensorType ] === undefined ) {
@@ -263,7 +268,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 		var localCamera   = camera;
 		var localRenderer = renderer;
 		// clicking: enable clicking on the screen to interact with objects in the 3D world
-		projector         = new THREE.Projector();
+		var projector         = new Projector();
 		var line;
 		var scope         = this;
 
@@ -277,16 +282,20 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 		 * @returns Array sensor names
 		 */
 		function _findSensors(object, sensorType) {
+			scope.log('finding sensors');
 			var sensorNames = [];
 
 			for ( var name in scope.sensorRegistry[ sensorType ] ) {
+				if (!scope.sensorRegistry[ sensorType ].hasOwnProperty(name)) {
+					continue;
+				}
 				//this.log('Checking the registry for ' + name);
 
 				for ( var i = 0; i < scope.sensorRegistry[ sensorType ][ name ].length; i ++ ) {
 
 					if ( scope.sensorRegistry[ sensorType ][ name ][ i ] === object ) {
 						// this object is controlled by the sensor a
-						//this.log('Found ' + i  + ' in ' + sensorType + ':' + name + ' and it is ' + object);
+						// this.log('Found ' + i  + ' in ' + sensorType + ':' + name + ' and it is ' + object);
 						sensorNames.push(name);
 					}
 
@@ -294,13 +303,18 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 
 			}
 
-			// scope.log('The clicked object can be affected by the following sensors of type ' + sensorType + ':');
-			// scope.log(sensorNames);
+			scope.log('The clicked object can be affected by the following sensors of type ' + sensorType + ':');
+			scope.log(sensorNames);
 
 			return sensorNames;
 		}
 
-		renderer.domElement.addEventListener('mousedown', function (event) {
+		console.log({"renderer.domElement":renderer.domElement});
+
+		// @todo, we want to use mousedown here, but it seems to have been "stolen" by controls or similar
+		renderer.domElement.addEventListener('click', e => {
+				// scope.log('mousedown');
+				console.log('click');
 				/**
 				 * Recursively finds all targetroutes for a given route.
 				 *
@@ -314,7 +328,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 						return targetRoutes;
 					}
 
-					var routesRegistry = scene.userData.routes;
+					var routesRegistry = scope.scene.userData.routes;
 					//this.log(routesRegistry, 'routesRegistry');
 
 					if ( 'undefined' === typeof routesRegistry[ triggerRoute.target.name ] ) {
@@ -348,11 +362,11 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 				 *
 				 * Returned routes have a source and target object. Each have a name and event property.
 				 *
-				 * @param string name Name of the source node of the event.
+				 * @param name string Name of the source node of the event.
 				 * @returns {*}
 				 */
 				function _getRoutesForEvent (name) {
-					var routesRegistry = scene.userData.routes;
+					var routesRegistry = scope.scene.userData.routes;
 					var routes         = routesRegistry[ name ];
 					scope.log(routes, 'routes');
 					return routes;
@@ -388,7 +402,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 						 */
 
 						// because of the above assumption, the root route already points us to a TimeSensor, which is the target of our rootRoute.
-						var timeSensor = scene.getObjectByName(rootRoute.target.name);
+						var timeSensor = scope.scene.getObjectByName(rootRoute.target.name);
 						var cycleInterval = timeSensor.userData.originalVrmlNode.cycleInterval;
 
 						while ( 'function' === typeof targetRoute.pop ) {
@@ -409,7 +423,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 							}
 						}
 
-						var originalNode = scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
+						var originalNode = scope.scene.getObjectByName(targetRoute.source.name).userData.originalVrmlNode;
 
 						// any supported interpolator will work, for now, only OrientationInterpolator and PositionInterpolator
 						if ( undefined === VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ] ) {
@@ -420,7 +434,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 						var interpolator = new VrmlParser.Renderer.ThreeJs.VrmlNode[ originalNode.node ](originalNode, cycleInterval, scope.debug);
 						scope.log(interpolator, originalNode.node);
 						var name   = 'surrounding_' + targetRoute.target.name;
-						var target = scene.getObjectByName(name);
+						var target = scope.scene.getObjectByName(name);
 
 						// cleanup method for when the callback wants to be removed because it's done.
 						var finish = function (touch) {
@@ -440,14 +454,14 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 				var x = event.offsetX == undefined ? event.layerX : event.offsetX;
 				var y = event.offsetY == undefined ? event.layerY : event.offsetY;
 
-				var vector = new THREE.Vector3();
+				var vector = new Vector3();
 				vector.set(( x / localRenderer.domElement.width ) * 2 - 1, - ( y / localRenderer.domElement.height ) * 2 + 1, 0.5);
 
 				vector.unproject(localCamera);
 
-				var raycaster = new THREE.Raycaster(localCamera.position, vector.sub(localCamera.position).normalize());
+				var raycaster = new Raycaster(localCamera.position, vector.sub(localCamera.position).normalize());
 
-				var objects    = scene.children;
+				var objects    = scope.scene.children;
 				var intersects = raycaster.intersectObjects(objects, true);
 
 				if ( intersects.length ) {
@@ -477,7 +491,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 				// if ( true === scope.debug ) {
 				//   // draw a line where the object was clicked
 				//   if ( null !== line ) {
-				//     scene.remove(line);
+				//     scope.scene.remove(line);
 				//   }
 				//
 				//   var lineMaterial = new THREE.LineBasicMaterial({
@@ -488,7 +502,7 @@ VrmlParser.Renderer.ThreeJs.Animation.prototype = {
 				//   geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x, raycaster.ray.origin.y, raycaster.ray.origin.z));
 				//   geometry.vertices.push(new THREE.Vector3(raycaster.ray.origin.x + (raycaster.ray.direction.x * 100000), raycaster.ray.origin.y + (raycaster.ray.direction.y * 100000), raycaster.ray.origin.z + (raycaster.ray.direction.z * 100000)));
 				//   line = new THREE.Line(geometry, lineMaterial);
-				//   scene.add(line);
+				//   scope.scene.add(line);
 				//   // / draw a line
 				// }
 

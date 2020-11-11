@@ -1,3 +1,5 @@
+import VrmlParser from "../../ThreeJs.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since September 1, 2016

@@ -1,3 +1,7 @@
+import VrmlParser from "../../ThreeJs.js";
+import {Vector3} from "../../../node_modules/three/src/math/Vector3.js";
+import {Quaternion} from "../../../node_modules/three/src/math/Quaternion.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since May 25, 2016
@@ -27,8 +31,8 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.OrientationInterpolator.prototype.tween = f
 	//this.log(this);
 	var from       = this.target.quaternion !== undefined ? this.target.quaternion.w : this.target.rotation.w;
 	this.log('Animating from ' + from + ' to ' + endRadians);
-	var endQuaternion = new THREE.Quaternion();
-	var vector3       = new THREE.Vector3(r.x, r.y, r.z);
+	var endQuaternion = new Quaternion();
+	var vector3       = new Vector3(r.x, r.y, r.z);
 	endQuaternion.setFromAxisAngle(vector3, endRadians);
 	var duration    = this.getDuration();
 	this.tweenObj = new TWEEN

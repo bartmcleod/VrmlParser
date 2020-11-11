@@ -1,3 +1,9 @@
+import VrmlParser from "../../ThreeJs.js";
+import {Geometry} from "../../../node_modules/three/src/core/Geometry.js";
+import {Face3} from "../../../node_modules/three/src/core/Face3.js";
+import {Vector2} from "../../../node_modules/three/src/math/Vector2.js";
+import {Vector3} from "../../../node_modules/three/src/math/Vector3.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since January 12, 2017
@@ -14,11 +20,9 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 	var smooth = new VrmlParser.Renderer.ThreeJs.SmoothEdges(this.debug);
 	var node   = this.node;
 
-	object = new THREE.Geometry();
+	let object = new Geometry();
 
-	var indexes, uvIndexes, uvs;
-
-	var vec;
+	var uvs;
 
 	if ( node.has('texCoord') ) {
 
@@ -35,7 +39,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 
 			var point = node.coord.point[ k ];
 
-			vec = new THREE.Vector3(point.x, point.y, point.z);
+			let vec = new Vector3(point.x, point.y, point.z);
 
 			object.vertices.push(vec);
 
@@ -51,7 +55,8 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 		// read this: http://math.hws.edu/eck/cs424/notes2013/16_Threejs_Advanced.html
 		for ( var i = 0, j = node.coordIndex.length; i < j; i ++ ) {
 
-			indexes = node.coordIndex[ i ];
+			let indexes = node.coordIndex[ i ];
+			let uvIndexes;
 
 			if ( node.has('texCoordIndex') ) {
 				uvIndexes = node.texCoordIndex[ i ];
@@ -71,7 +76,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 				var b = indexes[ skip + (node.ccw ? 1 : 2) ];
 				var c = indexes[ skip + (node.ccw ? 2 : 1) ];
 
-				var face = new THREE.Face3(
+				var face = new Face3(
 					a,
 					b,
 					c,
@@ -84,15 +89,15 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.IndexedFaceSet.prototype.parse = function (
 				// @todo: this code might have to move till after vertices have been duplicated for sharp edge rendering
 				if ( uvs && uvIndexes ) {
 					object.faceVertexUvs [ 0 ].push([
-						new THREE.Vector2(
+						new Vector2(
 							uvs[ uvIndexes[ 0 ] ].x,
 							uvs[ uvIndexes[ 0 ] ].y
 						),
-						new THREE.Vector2(
+						new Vector2(
 							uvs[ uvIndexes[ skip + (node.ccw ? 1 : 2) ] ].x,
 							uvs[ uvIndexes[ skip + (node.ccw ? 1 : 2) ] ].y
 						),
-						new THREE.Vector2(
+						new Vector2(
 							uvs[ uvIndexes[ skip + (node.ccw ? 2 : 1) ] ].x,
 							uvs[ uvIndexes[ skip + (node.ccw ? 2 : 1) ] ].y
 						)

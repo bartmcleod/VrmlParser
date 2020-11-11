@@ -1,3 +1,7 @@
+import VrmlParser from "../../ThreeJs.js";
+import {OrbitControls as OrbitControls} from "../../../node_modules/three/examples/jsm/controls/OrbitControls.js";
+import {FlyControls as FlyControls} from "../../../node_modules/three/examples/jsm/controls/FlyControls.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since September 20, 2016
@@ -9,6 +13,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode[ 'NavigationInfo' ] = function (originalNod
 	// inherit from VrmlNode
 	VrmlParser.Renderer.ThreeJs.VrmlNode.apply(this, arguments);
 	this.controls = null;
+
 }
 
 /**
@@ -21,9 +26,11 @@ VrmlParser.Renderer.ThreeJs.VrmlNode[ 'NavigationInfo' ] = function (originalNod
  * @todo: Create controls that mimic the original design of VRML better.
  * @param scene
  * @param debug
+ * @param renderer
+ * @param camera
  * @param domElement (renderer.domElement needed for controls)
  */
-VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo.prototype.parse = function (scene, debug, renderer) {
+VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo.prototype.parse = function (scene, debug, renderer, camera, controls) {
 	this.log('From NavigationInfo');
 	var speed = undefined !== this.node.speed ? this.node.speed : 1;
 
@@ -31,15 +38,14 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.NavigationInfo.prototype.parse = function (
 		switch ( this.node.type.toLowerCase() ) {
 			case 'fly':
 				this.log('fly!');
-				// use global controls, renderer and camera, no better solution at hand
-				controls               = new THREE.FlyControls(camera, renderer.domElement);
+				controls               = new FlyControls(camera, renderer.domElement);
 				controls.movementSpeed = speed;
 				break;
 		}
 	} else {
 		this.log('orbit!');
 		// use global controls, renderer and camera, no better solution at hand
-		controls               = new THREE.OrbitControls(camera, renderer.domElement);
+		controls               = new OrbitControls(camera, renderer.domElement);
 		controls.movementSpeed = speed;
 	}
 

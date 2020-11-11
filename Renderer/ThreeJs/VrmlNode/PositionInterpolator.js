@@ -1,3 +1,6 @@
+import VrmlParser from "../../ThreeJs.js";
+import {Vector3} from "../../../node_modules/three/src/math/Vector3.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since May 25, 2016
@@ -39,5 +42,5 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.PositionInterpolator.prototype.tween = func
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.PositionInterpolator.prototype.getPosition = function () {
 	var v = this.keyValue[ this.index ];
-	return new THREE.Vector3(v.x, v.y, v.z);
+	return new Vector3(v.x, v.y, v.z);
 }

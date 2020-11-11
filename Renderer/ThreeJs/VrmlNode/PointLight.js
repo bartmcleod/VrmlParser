@@ -1,8 +1,12 @@
+import VrmlParser from "../../ThreeJs.js";
+import {PointLight} from "../../../node_modules/three/src/lights/PointLight.js";
+import {Color} from "../../../node_modules/three/src/math/Color.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since December 8, 2016
  *
- * Conversion of a VRML 97 PointLight node to a THREE.PointLight
+ * Conversion of a VRML 97 PointLight node to a PointLight
  */
 
 VrmlParser.Renderer.ThreeJs.VrmlNode[ 'PointLight' ] = function (originalNode, debug) {
@@ -17,10 +21,10 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.PointLight.prototype.parse = function (scen
 
 	if ( this.node.has('color') ) {
 		var c = this.node.color;
-		color = new THREE.Color(c.x, c.y, c.z);
+		color = new Color(c.x, c.y, c.z);
 	}
 
-	var pointLight = new THREE.PointLight(color ? color : 0xaaaaaa);
+	var pointLight = new PointLight(color ? color : 0xaaaaaa);
 	//PointLight( color, intensity, distance, decay )
 
 	if ( this.node.has('on') ) {

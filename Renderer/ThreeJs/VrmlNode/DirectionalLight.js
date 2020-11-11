@@ -1,3 +1,7 @@
+import VrmlParser from "../../ThreeJs.js";
+import {DirectionalLight} from "../../../node_modules/three/src/lights/DirectionalLight.js";
+import {Color} from "../../../node_modules/three/src/math/Color.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since December 7, 2016
@@ -17,10 +21,10 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.DirectionalLight.prototype.parse = function
 
 	if ( this.node.has('color') ) {
 		var c = this.node.color;
-		color = new THREE.Color(c.x, c.y, c.z);
+		color = new Color(c.x, c.y, c.z);
 	}
 
-	var dirLight = new THREE.DirectionalLight(color ? color : 0xaaaaaa);
+	var dirLight = new DirectionalLight(color ? color : 0xaaaaaa);
 
 	if ( this.node.has('direction') ) {
 		// From the docs: the orientation / direction of the light is calculated from its position to its target.

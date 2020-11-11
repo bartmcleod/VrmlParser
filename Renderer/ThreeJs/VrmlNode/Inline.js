@@ -1,3 +1,5 @@
+import VrmlParser from "../../ThreeJs.js";
+import {FileLoader} from "../../../node_modules/three/src/loaders/FileLoader.js";
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since January 4, 2019
@@ -20,7 +22,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Inline.prototype.parse = function (scene, c
 	// support multiple urls
 	let urls = typeof node.url === 'object' ? node.url : [ node.url ];
 
-	let loader = new THREE.FileLoader();
+	let loader = new FileLoader();
 
 	// define callback to convert loaded vrml data
 	let onload = function (vrml) {

@@ -1,3 +1,5 @@
+import VrmlParser from "../ThreeJs.js";
+import {Vector3} from "../../node_modules/three/src/math/Vector3.js";
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since February 8, 2017
@@ -37,7 +39,7 @@ VrmlParser.Renderer.ThreeJs.Analyzer.prototype.labelFaces = function(object) {
 		var flatIndexes = ' [' + face.a + ', ' + face.b + ', ' + face.c + '] ';
 		var spritey = this.makeTextSprite( flatIndexes, { fontsize: 16, backgroundColor: {r:100, g:100, b:255, a:1} } );
 
-		var centroid = new THREE.Vector3();
+		var centroid = new Vector3();
 		centroid.add(geometry.vertices[face.a]);
 		centroid.add(geometry.vertices[face.b]);
 		centroid.add(geometry.vertices[face.c]);

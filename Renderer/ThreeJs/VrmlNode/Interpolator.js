@@ -1,3 +1,5 @@
+import VrmlParser from "../../ThreeJs.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since January 2, 2017
@@ -43,6 +45,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Interpolator.prototype.getDuration = functi
 	var currentKey = this.key[ this.index ];
 	var previousKey = this.key[ this.index - 1 ];
 	var duration = (currentKey - previousKey) * 1000 * this.cycleInterval;
+
 	return duration;
 }
 

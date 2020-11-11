@@ -1,3 +1,10 @@
+import VrmlParser from "../../ThreeJs.js";
+import {Group} from "../../../node_modules/three/src/objects/Group.js";
+import {FontLoader} from "../../../node_modules/three/src/loaders/FontLoader.js";
+import {TextGeometry} from "../../../node_modules/three/src/geometries/TextGeometry.js";
+import {Box3} from "../../../node_modules/three/src/math/Box3.js";
+import {Mesh} from "../../../node_modules/three/src/objects/Mesh.js";
+
 /**
  * @author Bart McLeod, mcleod@spaceweb.nl
  * @since May 1, 2018
@@ -23,9 +30,9 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Text.prototype.setMaterial = function (mate
 };
 
 VrmlParser.Renderer.ThreeJs.VrmlNode.Text.prototype.parse = function (scene, camera) {
-	var textGroup = new THREE.Group();
+	var textGroup = new Group();
 
-	var loader = new THREE.FontLoader();
+	var loader = new FontLoader();
 
 	var node = this.node;
 
@@ -69,7 +76,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Text.prototype.parse = function (scene, cam
 			y = topToBottom ? (node.string.length - i) * size : i * size;
 			y *= spacing;
 
-			let geometry = new THREE.TextGeometry(text, {
+			let geometry = new TextGeometry(text, {
 				font: font,
 				size: size,
 				height: 0, // this is the thickness. It must be zero to match the VRML 97 specification.
@@ -81,13 +88,13 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Text.prototype.parse = function (scene, cam
 			});
 			geometry.computeBoundingBox();
 			geometry.computeFaceNormals();
-			let textMesh = new THREE.Mesh(geometry, scope.material);
+			let textMesh = new Mesh(geometry, scope.material);
 			textMesh.position.set(0, y, 0);
 			textGroup.add(textMesh);
 
 			// determine greatest width
 			// first get a bounding box
-			let box = new THREE.Box3().setFromObject(textMesh);
+			let box = new Box3().setFromObject(textMesh);
 			let width = box.getSize().x;
 
 			if ( greatestWidth < width ) {
@@ -100,7 +107,7 @@ VrmlParser.Renderer.ThreeJs.VrmlNode.Text.prototype.parse = function (scene, cam
 			// adjust x position to the greatest width, minus the width
 			for ( var j = 0; j < textGroup.children.length; j ++ ) {
 				let textMesh = textGroup.children[ j ];
-				let box = new THREE.Box3().setFromObject(textMesh);
+				let box = new Box3().setFromObject(textMesh);
 				let width = box.getSize().x;
 				textMesh.position.setX(greatestWidth - width);
 			}
