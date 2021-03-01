@@ -19,7 +19,7 @@
   "dependencies": {
     "fs": "0.0.2",
     "pegjs-require": "*",
-    "three": "^0.121.0",
+    "three": "^0.125.0",
     "tween.js": "^16.6.0"
   },
   "license": "MIT",
